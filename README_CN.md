@@ -94,7 +94,8 @@ docker pull wubuku/dddappp-ao:master
 
 你会发现，下面需要填充的后缀为 `_logic.lua` 的文件中，函数的签名部分已经写好了，你只需要填充函数体部分。
 你还会发现，在这些 `_logic.lua` 文件中，已经包含了不少注释，这些注释是 dddappp 工具根据 DDDML 模型生成的，
-AI 可以（当然，你也可以）参考这些注释进行编码。
+你可能觉得这注释量简直是有点“不厌其烦”了；
+我们的目的是让 AI 可以（当然，你也可以）参考这些注释来完成业务逻辑代码的编写。
 
 
 #### 修改 `article_update_body_logic`
@@ -136,7 +137,7 @@ end
 return article_update_body_logic
 ```
 
-看起来相当不错！你可能一下子都找不到什么错误。
+看起来相当不错！你可能一下子都找不到什么明显的缺陷。
 
 让我们点击 CHAT 窗口的 Apply 按钮，将 AI 生成的代码应用到当前文件中；
 然后，点击 IDE 窗口的 Accept 按钮，接受对当前文件的修改。
@@ -288,6 +289,44 @@ Inbox[#Inbox]
 ```text
  Data = "{"result":{"commenter":"alice","body":"This looks great.","comment_seq_id":1}}",
 ```
+
+更新你刚发表的评论：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({ article_id = 1, version = 3, comment_seq_id = 1, commenter = "alice", body = "It's better than I thought!" }) })
+```
+
+再次查看评论信息：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+
+Inbox[#Inbox]
+```
+
+你应该可以看到评论的内容已经被更新。
+
+移除你刚发表的评论：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({ article_id = 1, version = 4, comment_seq_id = 1 }) })
+```
+
+再次查看评论信息：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+
+Inbox[#Inbox]
+```
+
+你应该会看到类似这样的输出：
+
+```text
+New Message From wkD..._XQ: Data = {"error":"ID_NOT_EXI
+```
+
+证明评论已经被移除。
 
 
 【TBD】
