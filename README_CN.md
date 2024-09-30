@@ -112,13 +112,13 @@ docker pull wubuku/dddappp-ao:master
 
 #### 实现“更新文章正文”的业务逻辑
 
-使用 Cursor IDE 开发当前代码库的目录，然后打开文件 `./src/article_update_body_logic.lua`，我是这样让 AI 帮助我生成代码的：
-* 使用快捷键 Cmd + A 全选当前文件的代码
-* 使用快捷键 Cmd + L 打开 CHAT 窗口
-* 输入 `complete functions`，让 AI 帮我完成函数的编码
+使用 Cursor IDE 打开当前代码库目录，然后打开文件 `./src/article_update_body_logic.lua`，
+我是这样引导 AI 帮助我生成完成业务逻辑的编码的：
+* 使用快捷键 Cmd + A 全选当前文件的代码（我使用的是 macOS 系统，Windows 需用将 Cmd 替换为 Ctrl）。
+* 使用快捷键 Cmd + L 打开 CHAT 窗口。
+* 输入 `complete the functions`，让 AI 帮我完成函数的编码。
 
-
-这是 AI 为我生成的代码：
+下面是 AI 为我生成的代码：
 
 ```lua
 local article = require("article")
@@ -173,9 +173,9 @@ return article_update_body_logic
 
 
 打开文件 `./src/inventory_item_add_inventory_item_entry_logic.lua`，
-使用上面的介绍的方式，让 AI 再次“complete functions”。
+使用在上面介绍过的方法，让 AI 再次 `complete the functions`。
 
-在我测试的时候，AI 为我完成的代码是这样的：
+然后，AI 为我完成的代码是这样的：
 
 ```lua
 local inventory_item = require("inventory_item")
@@ -220,11 +220,12 @@ end
 return inventory_item_add_inventory_item_entry_logic
 ```
 
-我发誓：AI 生成的代码就是上面这样。除了删除注释之外，我没做任何修改！
+我发誓：除了删除注释之外，我没做任何修改！
 
 如果我们粗略检查一下，可能会发现有两个地方，`timestamp = msg.Timestamp or os.time()`，
-这里的 `or os.time()` 有点多余，但是问题应该不大。因为在 AO 中，`msg.Timestamp` 应该会有值，
-所以应该不会执行到 `os.time()`。让我们先一字不改，直接进行后面的测试看看。
+其中的 `or os.time()` 稍有多余，但问题应该不大。
+因为在 AO 中，`msg.Timestamp` 应该会有值，所以应该不会执行到 `os.time()`。
+让我们先一字不改，直接进行后面的测试看看。
 
 
 ## 测试应用
@@ -274,7 +275,7 @@ Send({ Target = ao.id, Tags = { Action = "CreateArticle" }, Data = json.encode({
 Inbox[#Inbox]
 ```
 
-如果没有错误，你应该会看到 Data 字段包含 `ArticleCreated` 字样的事件信息。
+如果没有错误，你应该会看到消息的 `Data` 字段包含 `ArticleCreated` 字样的事件信息。
 
 现在，再次查看当前已经生成的“文章的序号”：
 
@@ -282,7 +283,9 @@ Inbox[#Inbox]
 Send({ Target = ao.id, Tags = { Action = "GetArticleIdSequence" } })
 ```
 
-查看序号为 `1` 的文章的内容（在输出消息的 `Data` 属性中）：
+你应该会看到返回的序号已经变成了 `1`。
+
+可以这样查看序号为 `1` 的文章的内容：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode(1) })
@@ -320,13 +323,16 @@ Inbox[#Inbox]
 
 ### 测试“更新文章正文”
 
-如果你在上次 `.loal` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码（比如生成和更新了 `article_update_body_logic.lua` 文件），那么你需要重新装载应用：
+如果你在上次 `.loal` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码（比如更新了 `article_update_body_logic.lua` 文件），那么你需要重新装载应用：
 
 ```lua
 .loal {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
 ```
 
-让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文（注意将 `version` 的值设置为正确的值，如果你不确定，可以再次向 aos 进程发送 `GetArticle` 消息，然后查看收件箱的最后一条消息，查看文章的当前版本号）：
+让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文
+（注意将 `version` 的值设置为正确的值，如果你不确定它是什么，
+可以再次向 aos 进程发送 `GetArticle` 消息，然后 `Inbox[#Inbox]` 查看收件箱的最后一条消息，
+查看文章的当前版本号）：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = 1, version = 1, body = "New world of AI!" }) })
@@ -356,7 +362,7 @@ Inbox[#Inbox]
 ### 测试添加/修改/删除评论
 
 
-添加评论（注意将 `version` 的值设置为正确的值）：
+给序号为 `1` 的文章添加评论（注意将文章的 `version` 设置为正确的值）：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = 1, version = 2, commenter = "alice", body = "This looks great." }) })
@@ -426,7 +432,7 @@ New Message From wkD..._XQ: Data = {"error":"ID_NOT_EXI
 Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 100}) })
 ```
 
-等待收件箱收到 `InventoryItemEntryAdded` 事件消息后，这样查看库存单元数据：
+等待收件箱收到 `InventoryItemEntryAdded` 事件消息后，可以这样查看库存单元数据：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "GetInventoryItem" }, Data = json.encode({ product_id = 1, location = "x", inventory_attribute_set = {} }) })
@@ -446,7 +452,7 @@ Inbox[#Inbox]
 Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x" ,inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
 ```
 
-等待收件箱收到 `InventoryItemEntryAdded` 事件消息后，再次查看库存单元数据：
+等待收件箱收到 `InventoryItemEntryAdded` 事件消息，然后再次查看库存单元数据：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "GetInventoryItem" }, Data = json.encode({ product_id = 1, location = "x", inventory_attribute_set = {} }) })
@@ -463,11 +469,11 @@ Inbox[#Inbox]
 你可以看到，库存单元的数量已经更新为 230（`"quantity":230`）。
 
 
-##  延伸阅读
+## 延伸阅读
 
 ### 低代码开发 AO Dapp 的更复杂的示例
 
-我们的低代码工具可以为 AO 应用开发所做的事情，比上面演示的例子还要多一些。
+我们的低代码工具现在可以为 AO Dapp 开发所做的事情，比上面演示的例子还要多一些。
 这里有更复杂的示例：https://github.com/dddappp/A-AO-Demo/blob/main/README_CN.md
 
 
