@@ -44,15 +44,15 @@ aggregates:
 # =========================================================================
 
 
-    # methods:
-    #   UpdateBody:
-    #     metadata:
-    #       MessagingCommandName: "UpdateArticleBody"
-    #       # We set this "global" name to prevent naming conflicts between methods of different objects.
-    #     description: "Updates the body of an article"
-    #     parameters:
-    #       Body:
-    #         type: string
-    #     event:
-    #       name: "ArticleBodyUpdated"
+    methods:
+      UpdateBody:
+        metadata:
+          MessagingCommandName: "UpdateArticleBody"
+          # We set this "global" name to prevent naming conflicts between methods of different objects.
+        description: "Updates the body of an article"
+        parameters:
+          Body:
+            type: string
+        event:
+          name: "ArticleBodyUpdated"
 

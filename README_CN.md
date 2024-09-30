@@ -155,10 +155,77 @@ return article_update_body_logic
 让我们点击 CHAT 窗口的 Apply 按钮，将 AI 生成的代码应用到当前文件中；
 然后，点击 IDE 窗口的 Accept 按钮，接受对当前文件的修改。
 
+#### 来个更复杂的例子？
+
+也许你要说，上面的例子太简单了，能不能来个复杂点的？
+
+让我们在 `dddml` 目录中新增一个 DDDML 模型文件 `InventoryItem.yaml`。
+你可以看看我们已经写好的文件 `./dddml/InventoryItem.yaml` 的内容，看看是不是复杂多了？
+这个例子中，实体 `InventoryItem` 的 Id 是一个复合值对象 `InventoryItemId`，
+而 `InventoryItemId` 还“内嵌”了另外一个值对象 `InventoryAttributeSet`。
+而且实体 `InventoryItem` 的属性 `Entries` 是一个值对象 `InventoryItemEntry` 的列表，
+它用于记录库存条目的历史变更情况……
+
+然后，让我们再次执行 `docker run` 命令，重新生成代码。
+
+打开文件 `./src/inventory_item_add_inventory_item_entry_logic.lua`，
+使用上面的介绍的方式，让 AI 再次“complete functions”。
+
+在我测试的时候，AI 为我完成的代码是这样的：
+
+```lua
+local inventory_item = require("inventory_item")
+
+local inventory_item_add_inventory_item_entry_logic = {}
+
+function inventory_item_add_inventory_item_entry_logic.verify(_state, inventory_item_id, movement_quantity, cmd, msg, env)
+    if type(movement_quantity) ~= "number" then
+        error("movement_quantity must be a number")
+    end
+    if type(inventory_item_id) ~= "table" or
+        type(inventory_item_id.product_id) ~= "number" or
+        type(inventory_item_id.location) ~= "string" or
+        type(inventory_item_id.inventory_attribute_set) ~= "table" then
+        error("Invalid inventory_item_id")
+    end
+    return inventory_item.new_inventory_item_entry_added(inventory_item_id, _state, movement_quantity)
+end
+
+function inventory_item_add_inventory_item_entry_logic.mutate(state, event, msg, env)
+    if not state then
+        state = inventory_item.new(
+            event.inventory_item_id,
+            event.movement_quantity,
+            {
+                {
+                    movement_quantity = event.movement_quantity,
+                    timestamp = msg.Timestamp or os.time()
+                }
+            }
+        )
+    else
+        state.quantity = state.quantity + event.movement_quantity
+        table.insert(state.entries, {
+            movement_quantity = event.movement_quantity,
+            timestamp = msg.Timestamp or os.time()
+        })
+    end
+    return state
+end
+
+return inventory_item_add_inventory_item_entry_logic
+```
+
+我发誓：AI 生成的代码就是上面这样。除了删除注释之外，我没做任何修改！
+
+如果我们粗略检查一下，可能会发现有两个地方，`timestamp = msg.Timestamp or os.time()`，
+`or os.time()` 有点多余，但是问题应该不大。因为在 AO 中，`msg.Timestamp` 应该会有值，
+所以应该不会执行到 `os.time()`。让我们直接一字不改，直接进行后面的测试。
+
 
 ## 测试应用
 
-启动另一个 aos 进程：
+启动一个 aos 进程：
 
 ```shell
 aos ai_ao_test
@@ -203,7 +270,9 @@ Send({ Target = ao.id, Tags = { Action = "CreateArticle" }, Data = json.encode({
 Inbox[#Inbox]
 ```
 
-再次查看当前已经生成的“文章的序号”：
+如果没有错误，你应该会看到 Data 字段包含 `ArticleCreated` 字样的事件信息。
+
+现在，再次查看当前已经生成的“文章的序号”：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "GetArticleIdSequence" } })
@@ -253,7 +322,7 @@ Inbox[#Inbox]
 .loal {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
 ```
 
-让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文（注意将 `version` 的值设置为正确的值，如果你不确定，可以向进程发送 `GetArticle` 命令来再次查看文章的当前版本号）：
+让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文（注意将 `version` 的值设置为正确的值，如果你不确定，可以再次向 aos 进程发送 `GetArticle` 消息，然后查看收件箱的最后一条消息，查看文章的当前版本号）：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = 1, version = 1, body = "New world of AI!" }) })
@@ -339,8 +408,53 @@ Inbox[#Inbox]
 New Message From wkD..._XQ: Data = {"error":"ID_NOT_EXI
 ```
 
-证明评论已经被移除。
+你可以再次查看收件箱的最后条消息，完整的错误代码应该是 `ID_NOT_EXISTS`，这证明评论确实已经被移除。
 
 
-【TBD】
+
+### 测试库存单元（Inventory Item）操作
+
+如果你在上次 `.loal` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码，那么你需要重新装载应用。
+
+我们通过调用“添加库存单元条目”方法来添加库存单元：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 100}) })
+```
+
+等待收件箱收到 `InventoryItemEntryAdded` 事件消息后，这样查看库存单元数据：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "GetInventoryItem" }, Data = json.encode({ product_id = 1, location = "x", inventory_attribute_set = {} }) })
+
+Inbox[#Inbox]
+```
+
+你应该可以看到类似这样的输出：
+
+```text
+   Data = "{"result":{"entries":[{"movement_quantity":100,"timestamp":1727689714409}],"version":0,"inventory_item_id":{"location":"x","product_id":1,"inventory_attribute_set":[]},"quantity":100}}",
+```
+
+让我们再次通过“添加库存单元条目”来添加库存单元的数量：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x" ,inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
+```
+
+等待收件箱收到 `InventoryItemEntryAdded` 事件消息后，再次查看库存单元数据：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "GetInventoryItem" }, Data = json.encode({ product_id = 1, location = "x", inventory_attribute_set = {} }) })
+
+Inbox[#Inbox]
+```
+
+现在你应该看到类似这样的输出：
+
+```text
+   Data = "{"result":{"entries":[{"movement_quantity":100,"timestamp":1727689714409},{"movement_quantity":130,"timestamp":1727689995779}],"inventory_item_id":{"location":"x","product_id":1,"inventory_attribute_set":[]},"version":1,"quantity":230}}",
+```
+
+你可以看到，库存单元的数量已经更新为 230（`"quantity":230`）。
 

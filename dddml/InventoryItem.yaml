@@ -1,0 +1,49 @@
+aggregates:
+  InventoryItem:
+    id:
+      name: InventoryItemId
+      type: InventoryItemId
+      # The domain Id of this entity is a complex value object.
+    properties:
+      Quantity:
+        type: number
+      Entries:
+        itemType: InventoryItemEntry
+        isList: true
+        description: "The history of movements of the inventory item"
+    methods:
+      AddInventoryItemEntry:
+        shouldCreateOnDemand: true
+        metadata:
+          MessagingCommandName: "AddInventoryItemEntry"
+          # We set this "global" name to prevent naming conflicts between methods of different objects.
+        parameters:
+          MovementQuantity:
+            type: number
+        event:
+          name: "InventoryItemEntryAdded"
+
+valueObjects:
+  InventoryItemId:
+    properties:
+      ProductId:
+        type: number
+      Location:
+        type: string
+      InventoryAttributeSet:
+        type: InventoryAttributeSet
+        # The type of this property is another value object.
+        # We're deliberately making things more complex than they need to be...
+  InventoryAttributeSet:
+    properties:
+      Foo:
+        type: string
+      Bar:
+        type: string
+
+  InventoryItemEntry:
+    properties:
+      MovementQuantity:
+        type: number
+      Timestamp:
+        type: number
