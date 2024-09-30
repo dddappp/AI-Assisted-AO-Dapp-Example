@@ -21,6 +21,19 @@
 对于稍有 OOP（面向对象编程）经验的开发者来说，模型所表达的内容应该不难理解。
 
 
+也许你会觉得，这样手写 DDDML 模型有点麻烦。我们已经在做 AI 辅助建模的尝试。
+也许在不远的将来，你可以使用这样的提示词，得到类似上面那样的 `blog.yaml` 文件：
+
+```text
+我想要开发一个 AO 上的 Dapp，请为我推荐一个参考的 DDDML 模型。
+这是一个博客应用，主要包含文章及评论实体。
+文章包含标题、正文和作者等属性。
+我们需要支持文章的创建和修改，但是不能删除。
+评论只能针对具体的文章进行，不能发表独立于文章的评论。
+评论功能包含一般的 CRUD 方法，即支持创建（新增）、更新、删除。用户在发表评论时可输入供显示用的自己（即评论者）的名字。
+```
+
+
 > **提示**
 >
 > 关于 DDDML，这里有个介绍文章：["Introducing DDDML: The Key to Low-Code Development for Decentralized Applications"](https://github.com/wubuku/Dapp-LCDP-Demo/blob/main/IntroducingDDDML.md).
