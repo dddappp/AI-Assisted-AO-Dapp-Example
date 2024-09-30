@@ -1,0 +1,57 @@
+
+aggregates:
+  Article:
+    metadata:
+      Preprocessors: ["CRUD_IT"]
+      CRUD_IT_NO_DELETE: true
+    id:
+      name: ArticleId
+      type: number
+      generator:
+        class: sequence
+        structName: ArticleIdSequence
+    properties:
+      Title:
+        type: string
+      Body:
+        type: string
+      Author:
+        type: string
+        initializationLogic:
+          __CONTEXT_VARIABLE__: MsgSender
+        immutable: true
+      Comments:
+        itemType: Comment
+    entities:
+      Comment:
+        metadata:
+          Preprocessors: ["CRUD_IT"]
+        id:
+          name: CommentSeqId
+          type: number
+          generator:
+            class: sequence
+        properties:
+          Commenter:
+            type: String
+            # Maybe let the commenters leave their names
+          Body:
+            type: String
+# =========================================================================
+# If all you need for business logic is CRUD operations on entities, 
+# you don't even have to write the code manually!
+# =========================================================================
+
+    
+    methods:
+      UpdateBody:
+        metadata:
+          MessagingCommandName: "UpdateArticleBody"
+          # We set this "global" name to prevent naming conflicts between methods of different objects.
+        description: "Updates the body of an article"
+        parameters:
+          Body:
+            type: string
+        event:
+          name: "ArticleBodyUpdated"
+
