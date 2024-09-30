@@ -33,7 +33,6 @@
 评论功能包含一般的 CRUD 方法，即支持创建（新增）、更新、删除。用户在发表评论时可输入供显示用的自己（即评论者）的名字。
 ```
 
-
 > **提示**
 >
 > 关于 DDDML，这里有个介绍文章：["Introducing DDDML: The Key to Low-Code Development for Decentralized Applications"](https://github.com/wubuku/Dapp-LCDP-Demo/blob/main/IntroducingDDDML.md).
@@ -107,11 +106,11 @@ docker pull wubuku/dddappp-ao:master
 
 你会发现，下面需要填充的后缀为 `_logic.lua` 的文件中，函数的签名部分已经写好了，你只需要填充函数体部分。
 你还会发现，在这些 `_logic.lua` 文件中，已经包含了不少注释，这些注释是 dddappp 工具根据 DDDML 模型生成的，
-你可能觉得这注释量简直是有点“不厌其烦”了；
-我们的目的是让 AI 可以（当然，你也可以）参考这些注释来完成业务逻辑代码的编写。
+你可能觉得这注释量简直是又长又臭，看着让人有点不厌其烦了；
+不过，我们的主要目的是让 AI 可以（当然，你也可以）参考这些注释来完成业务逻辑代码的编写。
 
 
-#### 修改 `article_update_body_logic`
+#### 实现“更新文章正文”的业务逻辑
 
 使用 Cursor IDE 开发当前代码库的目录，然后打开文件 `./src/article_update_body_logic.lua`，我是这样让 AI 帮助我生成代码的：
 * 使用快捷键 Cmd + A 全选当前文件的代码
@@ -155,18 +154,23 @@ return article_update_body_logic
 让我们点击 CHAT 窗口的 Apply 按钮，将 AI 生成的代码应用到当前文件中；
 然后，点击 IDE 窗口的 Accept 按钮，接受对当前文件的修改。
 
+
 #### 来个更复杂的例子？
 
 也许你要说，上面的例子太简单了，能不能来个复杂点的？
 
 让我们在 `dddml` 目录中新增一个 DDDML 模型文件 `InventoryItem.yaml`。
 你可以看看我们已经写好的文件 `./dddml/InventoryItem.yaml` 的内容，看看是不是复杂多了？
-这个例子中，实体 `InventoryItem` 的 Id 是一个复合值对象 `InventoryItemId`，
-而 `InventoryItemId` 还“内嵌”了另外一个值对象 `InventoryAttributeSet`。
-而且实体 `InventoryItem` 的属性 `Entries` 是一个值对象 `InventoryItemEntry` 的列表，
-它用于记录库存条目的历史变更情况……
+* 这个例子中，实体 `InventoryItem` 的 Id 是一个复合值对象 `InventoryItemId`，
+* 而 `InventoryItemId` 还“内嵌”了另外一个值对象 `InventoryAttributeSet`。
+* 而且实体 `InventoryItem` 的属性 `Entries` 是一个值对象 `InventoryItemEntry` 的列表，它用于记录库存条目的历史变更情况。
+* 我们定义了一个方法 `AddInventoryItemEntry`，用于添加库存条目，这个方法会是需要创建或者更新库存单元记录……
 
 然后，让我们再次执行 `docker run` 命令，重新生成代码。
+
+> 在[这里](https://gist.github.com/wubuku/ef65acd4e49afaed0dc7481329155e50)保存了 `inventory_item_add_inventory_item_entry_logic.lua` 文件*此刻*的状态——
+> 也就是在执行 `docker run` 命令生成它之后，让 AI 执行“完形填空”之前的样子。
+
 
 打开文件 `./src/inventory_item_add_inventory_item_entry_logic.lua`，
 使用上面的介绍的方式，让 AI 再次“complete functions”。
@@ -219,8 +223,8 @@ return inventory_item_add_inventory_item_entry_logic
 我发誓：AI 生成的代码就是上面这样。除了删除注释之外，我没做任何修改！
 
 如果我们粗略检查一下，可能会发现有两个地方，`timestamp = msg.Timestamp or os.time()`，
-`or os.time()` 有点多余，但是问题应该不大。因为在 AO 中，`msg.Timestamp` 应该会有值，
-所以应该不会执行到 `os.time()`。让我们直接一字不改，直接进行后面的测试。
+这里的 `or os.time()` 有点多余，但是问题应该不大。因为在 AO 中，`msg.Timestamp` 应该会有值，
+所以应该不会执行到 `os.time()`。让我们先一字不改，直接进行后面的测试看看。
 
 
 ## 测试应用
@@ -457,4 +461,50 @@ Inbox[#Inbox]
 ```
 
 你可以看到，库存单元的数量已经更新为 230（`"quantity":230`）。
+
+
+##  延伸阅读
+
+### 低代码开发 AO Dapp 的更复杂的示例
+
+我们的低代码工具可以为 AO 应用开发所做的事情，比上面演示的例子还要多一些。
+这里有更复杂的示例：https://github.com/dddappp/A-AO-Demo/blob/main/README_CN.md
+
+
+### Sui 博客示例
+
+代码库：https://github.com/dddappp/sui-blog-example
+
+只需要写 30 行左右的代码（全部是领域模型的描述）——除此以外不需要开发者写一行其他代码——就可以一键生成一个博客；
+类似 [RoR 入门指南](https://guides.rubyonrails.org/getting_started.html) 的开发体验，
+
+特别是，一行代码都不用写，100% 自动生成的链下查询服务（有时候我们称之为 indexer）即具备很多开箱即用的功能。
+
+
+### Aptos 博客示例
+
+上面的博客示例的 [Aptos 版本](https://github.com/dddappp/aptos-blog-example)。
+
+### Sui 众筹 Dapp
+
+一个以教学演示为目的“众筹” Dapp：
+
+https://github.com/dddappp/sui-crowdfunding-example
+
+
+#### 使用 dddappp 开发 Sui 全链游戏
+
+这个一个生产级的实际案例：https://github.com/wubuku/infinite-sea
+
+
+#### 用于开发 Aptos 全链游戏的示例
+
+原版的 [constantinople](https://github.com/0xobelisk/constantinople) 是一个基于全链游戏引擎 [obelisk](https://obelisk.build) 开发的运行在 Sui 上的游戏。（注：obelisk 不是我们的项目。）
+
+我们这里尝试了使用 dddappp 低代码开发方式，实现这个游戏的 Aptos Move 版本：https://github.com/wubuku/aptos-constantinople/blob/main/README_CN.md
+
+开发者可以按照 README 的介绍，复现整个游戏的合约和 indexer 的开发和测试过程。模型文件写一下，生成代码，在三个文件里面填了下业务逻辑，开发就完成了。
+
+有个地方可能值得一提。Aptos 对发布的 Move 合约包的大小有限制（不能超过60k）。这个问题在 Aptos 上开发稍微大点的应用都会碰到。我们现在可以在模型文件里面声明一些模块信息，然后就可以自动拆分（生成）多个 Move 合约项目。（注：这里说的模块是指 DDD 术语中的模块，不是 Move 语言的那个模块概念。）
+
 
