@@ -164,7 +164,7 @@ return article_update_body_logic
 * 这个例子中，实体 `InventoryItem` 的 Id 是一个复合值对象 `InventoryItemId`，
 * 而 `InventoryItemId` 还“内嵌”了另外一个值对象 `InventoryAttributeSet`。
 * 而且实体 `InventoryItem` 的属性 `Entries` 是一个值对象 `InventoryItemEntry` 的列表，它用于记录库存条目的历史变更情况。
-* 我们定义了一个方法 `AddInventoryItemEntry`，用于添加库存条目，这个方法会是需要创建或者更新库存单元记录……
+* 我们定义了一个方法 `AddInventoryItemEntry`，用于添加库存条目，这个方法会视需要创建或者更新库存单元记录（`shouldCreateOnDemand: true`）……
 
 然后，让我们再次执行 `docker run` 命令，重新生成代码。
 
