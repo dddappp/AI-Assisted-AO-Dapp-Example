@@ -37,21 +37,22 @@ aggregates:
             # Maybe let the commenters leave their names
           Body:
             type: String
+
 # =========================================================================
 # If all you need for business logic is CRUD operations on entities, 
 # you don't even have to write the code manually!
 # =========================================================================
 
-    
-    methods:
-      UpdateBody:
-        metadata:
-          MessagingCommandName: "UpdateArticleBody"
-          # We set this "global" name to prevent naming conflicts between methods of different objects.
-        description: "Updates the body of an article"
-        parameters:
-          Body:
-            type: string
-        event:
-          name: "ArticleBodyUpdated"
+
+    # methods:
+    #   UpdateBody:
+    #     metadata:
+    #       MessagingCommandName: "UpdateArticleBody"
+    #       # We set this "global" name to prevent naming conflicts between methods of different objects.
+    #     description: "Updates the body of an article"
+    #     parameters:
+    #       Body:
+    #         type: string
+    #     event:
+    #       name: "ArticleBodyUpdated"
 

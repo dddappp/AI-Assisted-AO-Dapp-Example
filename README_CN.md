@@ -239,7 +239,7 @@ Inbox[#Inbox]
 .loal {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
 ```
 
-让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文（注意将 `version` 的值设置为正确的值）：
+让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文（注意将 `version` 的值设置为正确的值，如果你不确定，可以向进程发送 `GetArticle` 命令来再次查看文章的当前版本号）：
 
 ```lua
 Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = 1, version = 1, body = "New world of AI!" }) })
@@ -266,6 +266,28 @@ Inbox[#Inbox]
 ```
 
 
+### 测试添加/修改/删除评论
+
+
+添加评论（注意将 `version` 的值设置为正确的值）：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = 1, version = 2, commenter = "alice", body = "This looks great." }) })
+```
+
+查看评论信息，如果之前没有给文章添加过评论，那么你新添加的评论的 `comment_seq_id` 应该是 `1`：
+
+```lua
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+
+Inbox[#Inbox]
+```
+
+你应该可以看到类似这样的输出：
+
+```text
+ Data = "{"result":{"commenter":"alice","body":"This looks great.","comment_seq_id":1}}",
+```
 
 
 【TBD】
