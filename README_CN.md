@@ -70,12 +70,12 @@ wubuku/dddappp-ao:master \
 
 上面的命令行参数实际上还是挺直白的：
 
-* This line `-v .:/myapp \` indicates mounting the local current directory into the `/myapp` directory inside the container.
-* `dddmlDirectoryPath` is the directory where the DDDML model files are located. It should be a directory path that can be read in the container.
-* Understand the value of the `boundedContextName` parameter as the name of the application you want to develop. When the name has multiple parts, separate them with dots and use the PascalCase naming convention for each part. 
-    Bounded-context is a term in Domain-driven design (DDD) that refers to a specific problem domain scope that contains specific business boundaries, constraints, and language. 
-    If you cannot understand this concept for the time being, it is not a big deal.
-* `aoLuaProjectDirectoryPath` is the directory path where the "on-chain contract" code is placed. It should be a readable and writable directory path in the container.
+* 这行 `-v .:/myapp \` 表示将本地当前目录挂载到容器内的 `/myapp` 目录。
+* `dddmlDirectoryPath` 是存放 DDDML 模型文件的目录。它应该是一个在容器内可读的目录路径。
+* 将 `boundedContextName` 参数的值理解为你想要开发的应用程序的名称。当名称有多个部分时，用点号分隔，并对每个部分使用 PascalCase 命名约定。
+    限界上下文（Bounded-context）是领域驱动设计（DDD）中的一个术语，指的是包含特定业务边界、约束和语言的特定问题域范围。
+    如果你暂时无法理解这个概念，也不必太在意。
+* `aoLuaProjectDirectoryPath` 是放置"链上合约"代码的目录路径。它应该是容器内一个可读写的目录路径。
 
 执行完上面的命令后，你会在 `./src` 目录下看到 dddappp 工具为你生成的代码。
 
