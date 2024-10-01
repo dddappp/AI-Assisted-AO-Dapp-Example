@@ -66,7 +66,7 @@ wubuku/dddappp-ao:master \
 
 #### 更新 Docker 镜像
 
-由于 dddappp v0.0.1 映像经常更新，如果您之前运行过上述命令，现在遇到了问题，你可能需要手动删除旧的镜像。
+由于 dddappp-ao:master 镜像经常更新，如果你之前运行过上述命令，现在遇到了问题，你可能需要手动删除旧的镜像，以确保你使用的是最新版本的镜像。
 
 ```shell
 # If you have already run it, you may need to Clean Up Exited Docker Containers first
