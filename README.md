@@ -294,11 +294,9 @@ After receiving the reply, view the content of the last inbox message:
 Inbox[#Inbox]
 ```
 
-如果没有错误，你应该会看到消息的 `Data` 字段包含 `ArticleCreated` 字样的事件信息。
-
-现在，再次查看当前已经生成的“文章的序号”：
 
 If there are no errors, you should see event information containing the word `ArticleCreated` in the `Data` field of the message.
+
 Now, check the "article sequence Id" that has been generated again:
 
 ```lua
