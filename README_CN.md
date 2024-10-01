@@ -489,9 +489,11 @@ Inbox[#Inbox]
 
 ### 低代码开发 AO Dapp 的更复杂的示例
 
-我们的低代码工具现在可以为 AO Dapp 开发所做的事情，比上面演示的例子还要多一些。
+我们的低代码工具现在就可以为 AO Dapp 开发者所做的事情，比上面演示的例子还要多一些。
 这里有更复杂的示例：https://github.com/dddappp/A-AO-Demo/blob/main/README_CN.md
 
+这个示例的最精彩之处，是展示了如何使用 DSL 编制用于实现“最终一致性”的 [SAGA](https://microservices.io/patterns/data/saga.html) 流程，并生成了 SAGA 的实现代码。
+如果有得选，我不认为有哪个开发者会愿意“手写”代码实现 SAGA 流程。
 
 ### Sui 博客示例
 

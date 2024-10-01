@@ -494,7 +494,11 @@ You can see that the quantity of the inventory item has been updated to 230 (`"q
 Our low-code tools can now do more for AO Dapp development than the examples demonstrated above.
 Here's a more complex example: https://github.com/dddappp/A-AO-Demo/blob/main/README.md
 
-#### Using dddappp to Develop a Sui Full-Chain Game
+The most exciting thing about this example is that it shows how to use DSL to orchestrate [SAGA](https://microservices.io/patterns/data/saga.html) processes for achieving "eventual consistency", and generate the implementation code of the SAGA.
+If given a choice, I don't think any developer would want to write code to implement SAGA processes manually. `:-)`
+
+
+#### Using dddappp to Develop a Sui Fully On-Chain Game
 
 This is a production-grade real-world example: https://github.com/wubuku/infinite-sea
 
@@ -507,9 +511,11 @@ With just about 30 lines of code (all domain model descriptions) - without devel
 A development experience similar to the [RoR Getting Started Guide](https://guides.rubyonrails.org/getting_started.html),
 Especially, without writing a single line of code, the 100% automatically generated off-chain query service (sometimes we call it indexer) has many out-of-the-box features.
 
+
 ### Aptos Blog Example
 
 The [Aptos version](https://github.com/dddappp/aptos-blog-example) of the blog example above.
+
 
 ### Sui Crowdfunding Dapp
 
