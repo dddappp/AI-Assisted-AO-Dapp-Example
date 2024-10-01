@@ -2,18 +2,19 @@
 
 English | [中文版](./README_CN.md)
 
-What will our low-code platform turn the development process into?
+What will our low-code platform turn the Dapp development process into?
 
 Dapp developers only need to do two things:
 
 * Modeling.
     * Use DSL to create model files, either manually or with visual tools. AI can also assist modeling in the future.
-* Implement business logic.
-    * If CRUD is enough, no code is needed.
-    * Otherwise, fill in the smart contract code used by the platform (for AO it's Lua code; for Sui, Aptos it's Move; for EVM it's Solidity). A platform-neutral expression language would be ideal in the future.
+* Implement specific business logic code.
+    * If CRUD operations are sufficient for the application's business logic, no additional code is needed.
+    * Otherwise, fill in the code using the language required by the "smart contract platform" (for AO, it's Lua code; for Sui and Aptos, it's Move; for EVM, the mainstream choice is Solidity). Ideally, a platform-independent expression language could be used in the future.
 
-We believe that AI can provide significant help in both of these areas.
-
+We believe that AI can provide tremendous help in both of these areas.
+This article primarily presents some of our attempts in the latter area. To be honest, AI's performance has been quite impressive.
+Regarding the former area, while it's not the focus of this article, we already have some very specific ideas that we believe can be implemented, and we're conducting some experimental explorations.
 
 
 ## Prerequisites
