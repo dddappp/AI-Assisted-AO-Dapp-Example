@@ -48,6 +48,8 @@ The comment functionality includes general CRUD methods, i.e., support for creat
 Users can input their own name (i.e., the commenter's name) for display when posting a comment.
 ```
 
+We can then expect the AI to generate the **first 40 lines** of this file [`./dddml/blog.yaml`](./dddml/blog.yaml) for us.
+
 > **Tip**
 >
 > Here's an introductory article about DDDML: ["Introducing DDDML: The Key to Low-Code Development for Decentralized Applications"](https://github.com/wubuku/Dapp-LCDP-Demo/blob/main/IntroducingDDDML.md).

@@ -46,6 +46,9 @@ Dapp 开发者只需要做两件事：
 评论功能包含一般的 CRUD 方法，即支持创建（新增）、更新、删除。用户在发表评论时可输入供显示用的自己（即评论者）的名字。
 ```
 
+然后，我们可以期望 AI 给我们生成这个文件 [`./dddml/blog.yaml`](./dddml/blog.yaml)的**前 40 行代码**。
+
+
 > **提示**
 >
 > 关于 DDDML，这里有个介绍文章：["Introducing DDDML: The Key to Low-Code Development for Decentralized Applications"](https://github.com/wubuku/Dapp-LCDP-Demo/blob/main/IntroducingDDDML.md).
