@@ -242,6 +242,9 @@ aos ai_ao_test
 .load {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
 ```
 
+> 其实，你还可以启动另外一个 aos 进程，比如 `aos process_alice`，然后在这个 `process_alice` 进程中执行下面的测试。
+> 不过，需要注意的是，在 `process_alice` 进程中执行测试时，需要将 `Send` 函数中的 `Target` 参数的值替换为 `ai_ao_test` 进程的 ID。
+
 装载 json 模块，以便于我们后面处理 JSON 格式的数据：
 
 ```lua
@@ -498,12 +501,12 @@ Inbox[#Inbox]
 https://github.com/dddappp/sui-crowdfunding-example
 
 
-#### 使用 dddappp 开发 Sui 全链游戏
+### 使用 dddappp 开发 Sui 全链游戏
 
 这个一个生产级的实际案例：https://github.com/wubuku/infinite-sea
 
 
-#### 用于开发 Aptos 全链游戏的示例
+### 用于开发 Aptos 全链游戏的示例
 
 原版的 [constantinople](https://github.com/0xobelisk/constantinople) 是一个基于全链游戏引擎 [obelisk](https://obelisk.build) 开发的运行在 Sui 上的游戏。（注：obelisk 不是我们的项目。）
 
