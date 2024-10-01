@@ -95,7 +95,7 @@ docker pull wubuku/dddappp-ao:master
 ```
 
 
-### Fill in Business Logic
+### AI-Assisted Implementing Business Logic
 
 If the business logic you need is just CRUD operations on entities, you don't even need to write code manually!
 You can now jump to the [Test Application](#test-application) section and start "test creating/updating/reading articles".
@@ -127,7 +127,7 @@ You might think these comments are long-winded and a bit annoying to look at;
 However, our main purpose is to let AI (and of course, you can too) refer to these comments to complete the writing of business logic.
 
 
-#### Implement the Business Logic for "Updating Article Body"
+#### Implement "Updating Article Body"
 
 Open the current code repository directory using Cursor IDE, 
 then open the file [`./src/article_update_body_logic.lua`](./src/article_update_body_logic.lua).
