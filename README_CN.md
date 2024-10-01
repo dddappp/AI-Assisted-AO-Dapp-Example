@@ -30,10 +30,9 @@ Dapp 开发者只需要做两件事：
 
 ### 编写 DDDML 模型
 
-已经编写好的模型文件见 `./dddml/blog.yaml`.
+已经编写好的模型文件见 [`./dddml/blog.yaml`](./dddml/blog.yaml).
 
 对于稍有 OOP（面向对象编程）经验的开发者来说，模型所表达的内容应该不难理解。
-
 
 也许你会觉得，这样手写 DDDML 模型有点麻烦。我们已经在做 AI 辅助建模的尝试。
 也许在不远的将来，你可以使用这样的提示词，得到类似上面那样的 `blog.yaml` 文件：
@@ -126,7 +125,7 @@ docker pull wubuku/dddappp-ao:master
 
 #### 实现“更新文章正文”的业务逻辑
 
-使用 Cursor IDE 打开当前代码库目录，然后打开文件 `./src/article_update_body_logic.lua`，
+使用 Cursor IDE 打开当前代码库目录，然后打开文件 [`./src/article_update_body_logic.lua`](./src/article_update_body_logic.lua)，
 我是这样引导 AI 帮助我生成完成业务逻辑的编码的：
 * 使用快捷键 Cmd + A 全选当前文件的代码（我使用的是 macOS 系统，Windows 需用将 Cmd 替换为 Ctrl）。
 * 使用快捷键 Cmd + L 打开 CHAT 窗口。
@@ -174,7 +173,7 @@ return article_update_body_logic
 也许你要说，上面的例子太简单了，能不能来个复杂点的？
 
 让我们在 `dddml` 目录中新增一个 DDDML 模型文件 `InventoryItem.yaml`。
-你可以看看我们已经写好的文件 `./dddml/InventoryItem.yaml` 的内容，看看是不是复杂多了？
+你可以看看我们已经写好的文件 [`./dddml/InventoryItem.yaml`](./dddml/InventoryItem.yaml) 的内容，看看是不是复杂多了？
 * 这个例子中，实体 `InventoryItem` 的 Id 是一个复合值对象 `InventoryItemId`，
 * 而 `InventoryItemId` 还“内嵌”了另外一个值对象 `InventoryAttributeSet`。
 * 而且实体 `InventoryItem` 的属性 `Entries` 是一个值对象 `InventoryItemEntry` 的列表，它用于记录库存条目的历史变更情况。
@@ -186,7 +185,7 @@ return article_update_body_logic
 > 也就是在执行 `docker run` 命令生成它之后，让 AI 执行“完形填空”之前的样子。
 
 
-打开文件 `./src/inventory_item_add_inventory_item_entry_logic.lua`，
+打开文件 [`./src/inventory_item_add_inventory_item_entry_logic.lua`](./src/inventory_item_add_inventory_item_entry_logic.lua)，
 使用在上面介绍过的方法，让 AI 再次 `complete the functions`。
 
 然后，AI 为我完成的代码是这样的：
