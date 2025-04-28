@@ -1,5 +1,7 @@
 # AI-Assisted AO Dapp Low-Code Development Example
 
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Docs-blue?logo=read-the-docs)](https://deepwiki.com/dddappp/AI-Assisted-AO-Dapp-Example)
+
 English | [中文版](./README_CN.md)
 
 What will our low-code platform turn the Dapp development process into?
