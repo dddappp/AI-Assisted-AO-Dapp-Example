@@ -236,7 +236,20 @@ echo "=== 测试完成 ==="
 
 ## 注意事项
 
-1. **消息等待策略**: 发送消息后，建议等待 "New Message From [进程ID]: Data =" 消息出现后再查看 Inbox 响应，而不是使用固定的行数等待，这样更可靠且避免不必要的延迟
+1. **消息等待策略**: 建议在 Send 命令后先读取确认消息（"Message added to outbox"），然后等待 2-3 秒让 AO 网络处理，再查看 Inbox 响应。这样比固定行数等待更可靠，例如：
+
+   ```bash
+   # 发送消息
+   mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"AddInventoryItemEntry\" }, Data = json.encode({...}) })"
+   mcp_iterm-mcp_read_terminal_output linesOfOutput=5  # 读取确认消息
+
+   # 等待 AO 网络处理（建议等待 2-3 秒）
+   # 在支持的开发环境中可以使用 sleep 2 或类似命令
+
+   # 然后查看响应
+   mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
+   mcp_iterm-mcp_read_terminal_output linesOfOutput=10
+   ```
 2. **网络配置**: 根据您的网络环境，可能需要配置适当的代理设置才能连接 AO 网络
 3. **MCP 工具**: 确保您的开发环境支持并正确配置了 MCP 工具
 4. **进程隔离**: 每次测试使用唯一的进程名（建议用时间戳），避免状态污染
