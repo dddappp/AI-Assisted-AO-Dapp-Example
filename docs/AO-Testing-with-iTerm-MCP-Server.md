@@ -178,12 +178,6 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 ```
 
 
-### 步骤 6: 退出测试
-```bash
-# 退出 aos REPL
-mcp_iterm-mcp_write_to_terminal command=".exit"
-```
-
 ## 自动化测试脚本示例
 
 ```bash
@@ -241,9 +235,9 @@ echo "  - 创建文章"
 # 更多测试步骤请参考文档详细说明
 echo "  - 更多测试步骤请参考文档详细说明"
 
-# 7. 退出测试
-echo "7. 退出测试..."
-# mcp_iterm-mcp_write_to_terminal command=".exit"
+# 7. 测试完成
+echo "7. 测试完成..."
+echo "   注意：如需终止 AO 进程，请发送两个 Control + C (^C ^C)"
 
 echo "=== 测试完成 ==="
 ```
