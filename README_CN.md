@@ -85,11 +85,11 @@ wubuku/dddappp-ao:master \
 由于 dddappp-ao:master 镜像经常更新，如果你之前运行过上述命令，现在遇到了问题，你可能需要手动删除旧的镜像，以确保你使用的是最新版本的镜像。
 
 ```shell
-# If you have already run it, you may need to Clean Up Exited Docker Containers first
+# 首先清理已退出的 Docker 容器（如果有的话）
 docker rm $(docker ps -aq --filter "ancestor=wubuku/dddappp-ao:master")
-# remove the image
+# 删除旧镜像
 docker image rm wubuku/dddappp-ao:master
-# pull the image
+# 拉取最新镜像
 docker pull wubuku/dddappp-ao:master
 ```
 
@@ -246,11 +246,13 @@ return inventory_item_add_inventory_item_entry_logic
 
 ## 测试应用
 
-启动一个 aos 进程：
+在一个终端中启动 aos 进程：
 
 ```shell
 aos ai_ao_test
 ```
+
+这将启动一个 AO 进程并进入 aos REPL（读取-求值-打印循环）环境。
 
 在这个 aos 进程中，装载我们的应用代码（注意将 `{PATH/TO/CURRENT_REPO}` 替换为当前代码库的实际路径）：
 
@@ -342,10 +344,10 @@ Inbox[#Inbox]
 
 ### 测试“更新文章正文”
 
-如果你在上次 `.loal` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码（比如更新了 `article_update_body_logic.lua` 文件），那么你需要重新装载应用：
+如果你在上次 `.load` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码（比如更新了 `article_update_body_logic.lua` 文件），那么你需要重新装载应用：
 
 ```lua
-.loal {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
+.load {PATH/TO/CURRENT_REPO}/src/ai_assisted_ao_dapp_example.lua
 ```
 
 让我们使用 `Article.UpdateBody` 方法更新序号为 `1` 的文章的正文
@@ -443,7 +445,7 @@ New Message From wkD..._XQ: Data = {"error":"ID_NOT_EXI
 
 ### 测试库存单元（Inventory Item）操作
 
-如果你在上次 `.loal` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码，那么你需要重新装载应用。
+如果你在上次 `.load` 文件 `ai_assisted_ao_dapp_example.lua` 之后修改了代码，那么你需要重新装载应用。
 
 我们通过调用“添加库存单元条目”方法来添加库存单元：
 
@@ -468,7 +470,7 @@ Inbox[#Inbox]
 让我们再次通过“添加库存单元条目”来添加库存单元的数量：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x" ,inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
+Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
 ```
 
 等待收件箱收到 `InventoryItemEntryAdded` 事件消息，然后再次查看库存单元数据：
