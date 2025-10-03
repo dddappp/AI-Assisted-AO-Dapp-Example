@@ -1,6 +1,19 @@
 # AO 库存管理应用自动化测试指南
 
-本文档指导开发者/AI编程助手如何使用 MCP 工具自动化测试 AO Dapp 示例项目中的库存管理功能。
+本文档指导开发者/AI编程助手如何使用 iTerm MCP Server 自动化测试 AO Dapp 示例项目中的库存管理功能。
+
+> **🚨 核心要求：必须使用 iTerm MCP Server 执行所有 AO 命令**
+>
+> **禁止在外部终端、系统终端或任何其他终端中执行 AO 命令！**
+>
+> 所有 AO 操作（包括启动进程、加载代码、发送消息等）**必须**通过以下 MCP 工具执行：
+> - `mcp_iterm-mcp_write_to_terminal` - 向 iTerm 终端写入命令
+> - `mcp_iterm-mcp_read_terminal_output` - 读取 iTerm 终端输出
+>
+> **执行环境要求**：
+> - 开发环境：支持 MCP 的 IDE（如 Cursor）
+> - 终端应用：iTerm 必须正在运行
+> - MCP 配置：iTerm MCP Server 必须正确配置
 
 ## 前置条件
 
@@ -26,31 +39,33 @@
 ### 1. 网络配置（根据需要）
 如果您的网络环境需要代理才能访问 AO 网络，请根据您的实际情况配置相应的环境变量：
 
+> **⚠️ 重要：这些环境变量设置命令也必须通过 iTerm MCP Server 执行！**
+
 ```bash
 # 根据您的网络环境配置以下变量（如果需要）
-export HTTPS_PROXY=http://your-proxy-host:port
-export HTTP_PROXY=http://your-proxy-host:port
-export ALL_PROXY=socks5://your-proxy-host:port
+mcp_iterm-mcp_write_to_terminal command="export HTTPS_PROXY=http://your-proxy-host:port"
+mcp_iterm-mcp_write_to_terminal command="export HTTP_PROXY=http://your-proxy-host:port"
+mcp_iterm-mcp_write_to_terminal command="export ALL_PROXY=socks5://your-proxy-host:port"
 
 # 禁用 AOS 命令的彩色输出（可选，提高兼容性）
-export AOS_NO_COLOR=1
+mcp_iterm-mcp_write_to_terminal command="export AOS_NO_COLOR=1"
 ```
 
 ### 2. 进入项目目录
+> **⚠️ 重要：目录切换命令也必须通过 iTerm MCP Server 执行！**
+
 ```bash
-cd /path/to/your/project
+mcp_iterm-mcp_write_to_terminal command="cd /path/to/your/project"
 ```
 
-## 测试流程
+## 测试流程概述
+
+**关键原则：从开始到结束，所有操作必须在同一个 iTerm MCP Server 会话中完成！**
+
+## 详细测试流程
 
 ### 步骤 1: 启动全新 AO 进程
 ```bash
-# 进入项目目录
-mcp_iterm-mcp_write_to_terminal command="cd /path/to/your/project"
-
-# 配置网络（如果需要）
-mcp_iterm-mcp_write_to_terminal command="export AOS_NO_COLOR=1"
-
 # 启动 AO 进程（使用时间戳确保进程名唯一）
 # 注意：aos 会显示交互式菜单，需要自动选择第一个选项（aos）
 mcp_iterm-mcp_write_to_terminal command="aos inventory-test-$(date +%s)"
@@ -84,7 +99,7 @@ mcp_iterm-mcp_write_to_terminal command=".load ./src/ai_assisted_ao_dapp_example
 mcp_iterm-mcp_read_terminal_output linesOfOutput=25
 ```
 
-### 步骤 4: 初始化环境
+### 步骤 4: 初始化 JSON 库
 ```bash
 # 加载 JSON 库用于数据序列化
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
@@ -169,14 +184,20 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
 ## 自动化测试脚本示例
 
+> **🚨 脚本执行警告：此脚本中的所有命令必须通过支持 MCP 的开发环境执行，不能在系统终端直接运行！**
+>
+> 脚本中的 `# mcp_iterm-mcp_write_to_terminal` 和 `# mcp_iterm-mcp_read_terminal_output` 注释行是实际的 MCP 工具调用命令，
+> 必须在支持 MCP 的 IDE（如 Cursor）中执行这些工具调用，而不是在 bash 脚本中运行。
+
 ```bash
 #!/bin/bash
 set -e
 
 echo "=== AO 库存管理应用自动化测试脚本 ==="
 
-# 以下是使用 MCP 工具执行自动化测试的命令序列
-# 注意：这些命令需要通过支持 MCP 的开发环境执行
+# 🚨 重要提醒：此脚本仅供参考！
+# 实际执行时，必须在支持 MCP 的开发环境中逐条执行以下工具调用命令
+# 不能直接运行此 bash 脚本，因为它不包含实际的 MCP 工具调用
 
 # 1. 切换到项目目录并设置环境
 echo "1. 准备环境..."
@@ -226,13 +247,13 @@ echo "=== 测试完成 ==="
 
 ## 关于 MCP 工具
 
-本文档中使用的 MCP（Machine Control Protocol）工具是一套用于自动化终端操作的工具集。主要包括：
+本文档使用的 MCP（Machine Control Protocol）工具包括：
 
-- `mcp_iterm-mcp_write_to_terminal`: 向终端写入命令
-- `mcp_iterm-mcp_read_terminal_output`: 读取终端输出
-- `mcp_iterm-mcp_send_control_character`: 发送控制字符
+- `mcp_iterm-mcp_write_to_terminal`: 向 iTerm 终端写入命令
+- `mcp_iterm-mcp_read_terminal_output`: 读取 iTerm 终端输出
+- `mcp_iterm-mcp_send_control_character`: 发送控制字符（如 Control+C）
 
-这些工具可以在支持 MCP 的各种开发环境中使用，不限于特定的 IDE。
+这些工具必须在支持 MCP 的 IDE（如 Cursor）中使用。
 
 ## 注意事项
 
