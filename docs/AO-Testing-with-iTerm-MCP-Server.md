@@ -285,8 +285,8 @@ echo "=== 测试完成 ==="
    mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"CreateArticle\" }, Data = json.encode({...}) })"
    mcp_iterm-mcp_read_terminal_output linesOfOutput=5  # 读取确认消息
 
-   # 等待 AO 网络处理（建议等待 2-3 秒）
-   # 在支持的开发环境中可以使用 sleep 2 或类似命令
+   # 等待 AO 网络处理（取决于网络状况，可能需要两三秒、几秒到十来秒不等，十来秒甚至更长的情况不太常见）
+   # 在支持的开发环境中可以使用 sleep 3 或类似命令（可根据实际情况调整等待时间）
 
    # 然后查看响应
    mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
