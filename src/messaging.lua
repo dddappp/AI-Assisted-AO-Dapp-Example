@@ -15,6 +15,40 @@ local MESSAGE_PASS_THROUGH_TAGS = {
 messaging.X_TAGS = X_TAGS
 messaging.MESSAGE_PASS_THROUGH_TAGS = MESSAGE_PASS_THROUGH_TAGS
 
+-- Embed saga information in data to avoid tag loss during forwarding
+function messaging.embed_saga_info_in_data(data, saga_id, response_action)
+    local enhanced_data = data or {}
+    enhanced_data[messaging.X_TAGS.SAGA_ID] = saga_id
+    enhanced_data[messaging.X_TAGS.RESPONSE_ACTION] = response_action
+    return enhanced_data
+end
+
+-- Extract saga information from data
+function messaging.extract_saga_info_from_data(data)
+    if type(data) == "string" then
+        data = json.decode(data)
+    end
+    return data[messaging.X_TAGS.SAGA_ID], data[messaging.X_TAGS.RESPONSE_ACTION]
+end
+
+-- DDDML Enhancement: Saga information access functions
+-- Based on data embedding mechanism (the only reliable cross-process transmission method)
+function messaging.get_saga_id(msg)
+    -- Extract saga information only from data (cross-process safe)
+    return messaging.extract_saga_info_from_data(msg.Data)
+end
+
+function messaging.get_response_action(msg)
+    -- Extract response action only from data (cross-process safe)
+    local _, response_action = messaging.extract_saga_info_from_data(msg.Data)
+    return response_action
+end
+
+function messaging.get_no_response_required(msg)
+    -- DDDML Enhancement: Extract from data embedding (not used yet, for compatibility)
+    return nil  -- Currently no_response_required is not embedded in data
+end
+
 local string_to_boolean_mappings = {
     ["true"] = true,
     ["false"] = false,
@@ -44,15 +78,20 @@ end
 
 function messaging.respond(status, result_or_error, request_msg)
     local data = status and { result = result_or_error } or { error = messaging.extract_error_code(result_or_error) };
+
+    local saga_id = messaging.get_saga_id(request_msg)
+    local response_action = messaging.get_response_action(request_msg)
+
     local tags = {}
-    for _, tag in ipairs(MESSAGE_PASS_THROUGH_TAGS) do
-        if request_msg.Tags[tag] then
-            tags[tag] = request_msg.Tags[tag]
-        end
+    if response_action then
+        tags["Action"] = response_action
     end
-    if request_msg.Tags[X_TAGS.RESPONSE_ACTION] then
-        tags["Action"] = request_msg.Tags[X_TAGS.RESPONSE_ACTION]
+
+    -- Embed saga information in response data if available
+    if saga_id then
+        data = messaging.embed_saga_info_in_data(data, saga_id, response_action)
     end
+
     ao.send({
         Target = request_msg.From,
         Data = json.encode(data),
@@ -64,7 +103,7 @@ function messaging.handle_response_based_on_tag(status, result_or_error, commit,
     if status then
         commit()
     end
-    if (not messaging.convert_to_boolean(request_msg.Tags[X_TAGS.NO_RESPONSE_REQUIRED])) then
+    if (not messaging.convert_to_boolean(messaging.get_no_response_required(request_msg))) then
         messaging.respond(status, result_or_error, request_msg)
     else
         if not status then

@@ -2,6 +2,13 @@
 
 本文档指导开发者/AI编程助手如何使用 iTerm MCP Server 自动化测试 AO Dapp 示例项目，避免手动重复操作。
 
+> **📋 重要更新（2025年10月）**：
+>
+> DDDML 工具已对 Get 方法的 API 格式进行了统一化改进：
+> - **GetArticle**: 从 `json.encode(1)` 改为 `json.encode({article_id = 1})`
+> - **GetComment**: 格式保持不变（已经是复合对象格式）
+> - 所有 Get 方法现在统一使用 JSON 对象格式，提高 API 一致性
+
 > **🚨 核心要求：必须使用 iTerm MCP Server 执行所有 AO 命令**
 >
 > **禁止在外部终端、系统终端或任何其他终端中执行 AO 命令！**
@@ -137,7 +144,7 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 #### 5.3 获取并验证文章
 ```bash
 # 获取文章详情
-mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetArticle\" }, Data = json.encode(1) })"
+mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetArticle\" }, Data = json.encode({article_id = 1}) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
 # 查看文章数据（应该包含 title, body, version: 0 等字段）
@@ -170,7 +177,7 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 #### 5.6 添加评论
 ```bash
 # 先获取当前文章版本（现在应该是 2）
-mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetArticle\" }, Data = json.encode(1) })"
+mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetArticle\" }, Data = json.encode({article_id = 1}) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10

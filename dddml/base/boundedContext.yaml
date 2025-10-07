@@ -1,0 +1,329 @@
+#%DDDML 0.1
+---
+
+configuration:
+  #  boundedContextName: "Dddml.SuiDemoContracts"
+
+  sequenceNumber: 0
+
+  #  defaultModule:
+  #    name: "Dddml.SuiDemoContracts"
+
+  #defaultTimestampType: "DateTime"
+  #defaultEntityVersionPropertyType: "long"
+  #defaultBooleanType: "bool"
+
+  #  isSurrogateIdMandatory: true
+  #  defaultSurrogateId:
+  #    name: Id
+  #    type: UID
+
+  aggregateEventVersionProperty:
+    name: Version
+    type: u64
+
+  #  mandatoryAggregateImplements: ["VersionedSuiMoveObject"]
+  #  # "VersionedSuiMoveEvent", "HasSuiEventNextCursor"
+  #  ignoreEntityImmutable: true
+
+  #genericTypes: ["TAccountId", "TQuantity"]
+  isGenericTypeAsType: true
+  baseUri: "/api"
+  
+  databaseNamingConvention: "UnderscoredNamingConvention"
+  associationMappingsEnabled: true
+  
+  valueObjectBaseTypes:
+    "Email": "string"
+
+  defaultReservedPropertyMetadata:
+    version:
+      name: OffChainVersion
+    active:
+      name: Active
+    createdBy:
+      name: CreatedBy
+    createdAt:
+      name: CreatedAt
+    updatedBy:
+      name: UpdatedBy
+    updatedAt:
+      name: UpdatedAt
+    deleted:
+      name: Deleted
+
+  sqlTypes:
+    DateTime: DATETIME
+    decimal: decimal(18,6)
+    decimal?: decimal(18,6)
+  
+  # -----------------------------------------
+  accountingQuantityTypes:
+    decimal:
+      zeroLogic:
+        Java: "BigDecimal.ZERO"
+      addLogic:
+        Java: "{fst}.add({snd} != null ? {snd} : BigDecimal.ZERO)"
+      negateLogic:
+        Java: "{0}.negate()"
+
+  # -----------------------------------------
+  namedStringPatterns:
+    "AttributeId": "^[\\(A-Za-z0-9][A-Za-z0-9]*"
+
+  onCommandExecuting:
+    Java: "{0}.setRequesterId(SecurityContextUtil.getRequesterId());"
+  
+  metadata:
+    
+    HttpServicesAuthorizationEnabled: false
+    #AlwaysGeneratingClobEventProperties: true
+    AlwaysGeneratingEventClobProperties: true
+    #AutoAggregateMethodJavaDefautLogicEnabled: true
+
+    HttpPostCreationWithIdEnabled: true
+    HttpPutToMergePatchEnabled: true
+    
+    MvoUsingRViewAsMView: true
+    #MvoStateDatabaseTableNameFormat: "{0}s"
+    #MvoHttpServiceResourceCollectionNameFormat: "{0}s"
+    #MvoClrAggregateDomainSubNamespaceName: "MViews"
+    #MvoJavaAggregateDomainSubPackageName: "mviews"
+    
+    SpringSecurityEnabled: true
+    
+    ClrDomainServiceSubNamespaceName: "Services"
+    ClrHttpServiceSetRequesterIdAttributeEnabled: true
+    ClrHttpServiceJsonContractResolver: "Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver"
+
+#    ClrHttpServiceJsonConverters: [
+#      "Dddml.SuiDemoContracts.HttpServices.JsonConverters.LongConverter",
+#      "Dddml.SuiDemoContracts.HttpServices.JsonConverters.DecimalConverter"
+#    ]
+#    ClrHttpServiceDtoJObjectMapperAssembly: "Dddml.SuiDemoContracts.HttpServices"
+#
+#    ClrRamlVersion: "0.8"
+#    ClrRamlClientSubNamespace: "HttpServices.ClientProxies.Raml"
+#    ClrRamlClientMainClassName: "DddmlSuiDemoContractsRamlClient"
+
+    TypeScriptJsonUsingCamelCasePropertyName: true
+    
+    NoStateToCommandConverters: true
+
+    IgnoringRemovalConcurrencyConflict: true
+    
+    # --------------------------------------------------------------
+    # Enable Message-based Commands for all Internal Methods
+    InternalMethodMessagingCommandEnabled: true
+
+    # --------------------------------------------------------------
+    AutoAggregateMethodJavaDefaultLogicEnabled: true
+    # Disable automatically generating Create, Update, Delete commands for the backend service
+    # (in the case of Dapp, the off-chain service).
+    AutoGeneratingCrUDCommandsDisabled: true
+    # Making event objects mutable may be useful for generating off-chain services.
+    AllEventsMutable: true
+
+    # OptimisticLockingVersionDisabled: true
+    # JavaSuiContractPackage: "com.github.wubuku.sui.tests"
+
+    IsJavaOffChainIndexer: true
+
+  move:
+
+    typeMappings:
+      "U8": "u8"
+      "U16": "u16"
+      "U32": "u32"
+      "U64": "u64"
+      "U128": "u128"
+      "U256": "u256"
+      "vector<u8>": "vector<u8>"
+      "string": "String" # std::string::String
+      "String": "String"
+      "Boolean": "bool"
+      "Bool": "bool"
+      "AsciiString": "std::ascii::String"
+
+    typeModules:
+      "string": "std::string"
+      "String": "std::string"
+
+#  sui:
+#    boundedContextPackage: "sui_test_proj1"
+#    moveObjectVersionPropertyName: "Version"
+#    moveObjectVersionPropertyType: "u64"
+#    offChainObjectNames: [ "SuiEventId" ]
+    # ignoredMandatoryAggregateEventImplements: ...
+
+#  aptos:
+#    boundedContextPackage: "AptosDemo"
+#    boundedContextNamedAddress: "aptos_demo"
+#    moveObjectVersionPropertyName: "Version"
+#    moveObjectVersionPropertyType: "u64"
+#    offChainObjectNames: [ ]
+
+  internetComputer:
+    objectVersionPropertyName: "Version"
+
+  java:
+#      boundedContextPackage: "org.dddml.suidemocontracts"
+#      specializationPackage: "org.dddml.suidemocontracts.specialization"
+    isUsingSeparatedDomainAggregatePackage: true
+    defaultUserIdType: "string"
+    #JavaSerializationAnnotationTypes: {}
+    stateLobPropertiesName: "DynamicProperties"
+    eventLobPropertiesName: "DynamicProperties"
+    eventClobPropertiesPersistenceName: "DynamicPropertiesLob"
+    eventClobPropertiesSqlType: VARCHAR(2000)
+
+    eventProcessingInterfaceName: HasStatus
+    eventProcessingStatusPropertyName: Status
+    eventProcessingStatusPropertyType: indicator
+
+    typeMappings:
+      "bool": "Boolean"
+      "bool?": "Boolean"
+      "DateTime": "Date"
+      "DateTime?": "Date"
+      "decimal": "BigDecimal"
+      "decimal?": "BigDecimal"
+      "int": "Integer"
+      "int?": "Integer"
+      "long": "Long"
+      "long?": "Long"
+      "string": "String"
+      "String": "String"
+      #"Timestamp": "Timestamp"
+      "U8": "Integer"
+      "U16": "Integer"
+      "U32": "Long"
+      "U64": "BigInteger"
+      "U128": "BigInteger"
+      "U256": "BigInteger"
+      "u8": "Integer"
+      "u16": "Integer"
+      "u32": "Long"
+      "u64": "BigInteger"
+      "u128": "BigInteger"
+      "u256": "BigInteger"
+      #"UID": "String"
+      "AsciiString": "String"
+
+    typePackages:
+      "BigDecimal": "java.math"
+      "BigInteger": "java.math"
+      "Date": "java.util"
+      "Money": "org.joda.money"
+      #"Timestamp": "java.sql"
+
+  # -----------------------------------------
+  onRestfulCommandExecuting:
+    Java: "{0}.setRequesterId(SecurityContextUtil.getRequesterId());"
+      #onRestfulCommandExecuting:
+    #  Java: "SecurityContextUtil.setCommandContext({0});"
+
+  php:
+
+    boundedContextNamespace: "Dddml\\SuiDemoContracts"
+    specializationNamespace: "Dddml"
+    defaultUserIdType: "string"
+    isUsingSeparatedDomainAggregateNamespace: false
+    
+    typeMappings:
+      "bool": "boolean"
+      "bool?": "boolean"
+      "DateTime": "\\DateTime"
+      "DateTime?": "\\DateTime"
+      "decimal": "Decimal"
+      "decimal?": "Decimal"
+      "int": "integer"
+      "int?": "integer"
+      "long": "Long"
+      "long?": "Long"
+      "Money": "Money"
+      "string": "string"
+    
+    serializationAnnotationTypes:
+      "bool": "boolean"
+      "bool?": "boolean"
+      "int": "integer"
+      "int?": "integer"
+      "string": "string"
+      "decimal": "Dddml\\Serializer\\Type\\Decimal"
+      "decimal?": "Dddml\\Serializer\\Type\\Decimal"
+      "long": "Dddml\\Serializer\\Type\\Long"
+      "long?": "Dddml\\Serializer\\Type\\Long"
+      "Money": "Dddml\\Serializer\\Type\\Money"
+      "DateTime": "DateTime"
+      "DateTime?": "DateTime"
+      
+      #typeNamespaces:
+      #  "Money": "NodaMoney"
+
+    defaultFieldTypes:
+      "bool": "CheckboxType"
+      "bool?": "CheckboxType"
+      "DateTime": "DateTimeType"
+      "DateTime?": "DateTimeType"
+      "decimal": "NumberType"
+      "decimal?": "NumberType"
+      "int": "IntegerType"
+      "int?": "IntegerType"
+      "long": "IntegerType"
+      "long?": "IntegerType"
+      "string": "TextType"
+      "Money": "MoneyType"
+
+  typeScript:
+
+    boundedContextNamespace: "Dddml.SuiDemoContracts"
+    specializationNamespace: "Dddml"
+    isUsingSeparatedDomainAggregateNamespace: false
+    
+    typeNamespaces:
+      "Money": "NodaMoney"
+
+    typeMappings:
+      "bool": "boolean"
+      "bool?": "boolean"
+      "DateTime": "string"
+      "DateTime?": "string"
+      "decimal": "string"
+      "decimal?": "string"
+      "int": "number"
+      "int?": "number"
+      "float": "number"
+      "double": "number"
+      "long": "string"
+      "long?": "string"
+      "Money": "Money"
+      "string": "string"
+
+  hibernate:
+
+    hibernateTypes:
+      Money:
+        mappingType: "org.dddml.suidemocontracts.domain.hibernate.usertypes.MoneyType"
+        propertyNames: [ "Amount", "Currency" ]
+        propertyTypes: [ "decimal", "string" ]
+      DateTime:
+        mappingType: timestamp
+
+  nHibernate:
+    
+    timestampMappingType: DateTimeUtc
+    nHibernateTypes:
+      Money:
+        mappingType: "Dddml.SuiDemoContracts.Services.Domain.NHibernate.NodaMoneyType, Dddml.SuiDemoContracts.Services"
+        propertyNames: [ "Amount", "Currency" ]
+        propertyTypes: [ "decimal", "string" ]
+
+#  aggregates:
+#    AttributeSetInstance:
+#      metadata:
+#        PersistingStateEventRemovedPropertiesAsSet: true
+#        CreationWithoutIdEnabled: true
+#        HttpPostCreationEnabled: true
+#        GeneratingAbstractIdGenerator: true
+
