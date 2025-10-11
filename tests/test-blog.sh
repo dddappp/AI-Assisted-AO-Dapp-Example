@@ -181,7 +181,7 @@ echo ""
 
 # 9. 获取评论
 echo "=== 步骤 9: 获取评论 ==="
-if ao-cli message "$PROCESS_ID" GetComment --data '{"article_id": 1, "comment_seq_id": 1}' --wait; then
+if ao-cli message "$PROCESS_ID" GetComment --data '{"article_comment_id": {"article_id": 1, "comment_seq_id": 1}}' --wait; then
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
 else

@@ -97,7 +97,13 @@ local function get_comment(msg, env, response)
         local cmd = json.decode(msg.Data)
         local _article_comment_id = cmd.article_comment_id
         local _key = json.encode(article_comment_id.to_key_array(_article_comment_id))
+        print("DEBUG: Looking for comment with key: " .. _key)
+        print("DEBUG: CommentTable keys: " .. json.encode(entity_coll.get_keys(CommentTable)))
         local _state = entity_coll.get(CommentTable, _key)
+        if not _state then
+            print("DEBUG: Comment not found, returning error")
+            error("ID_NOT_EXISTS")
+        end
         return _state
     end))
     messaging.respond(status, result, msg)
