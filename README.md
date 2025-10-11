@@ -6,13 +6,6 @@ English | [中文版](./README_CN.md)
 
 What will our low-code platform turn the Dapp development process into?
 
-> **📋 重要更新（2025年10月）**：
->
-> DDDML 工具已对 Get 方法的 API 格式进行了统一化改进：
-> - **GetArticle**: 从 `json.encode(1)` 改为 `json.encode({article_id = 1})`
-> - **GetComment**: 格式保持不变（已经是复合对象格式）
-> - 所有 Get 方法现在统一使用 JSON 对象格式，提高 API 一致性
-
 Dapp developers only need to do two things:
 
 * Modeling.
