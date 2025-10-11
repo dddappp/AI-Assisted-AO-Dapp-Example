@@ -395,7 +395,7 @@ Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ ar
 View the comment information. If you haven't added any comments to the article before, the `comment_seq_id` of your newly added comment should be `1`:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```
@@ -415,7 +415,7 @@ Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({
 View the comment information again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```
@@ -431,7 +431,7 @@ Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({
 View the comment information again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```

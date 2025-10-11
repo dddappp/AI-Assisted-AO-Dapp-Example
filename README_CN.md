@@ -392,7 +392,7 @@ Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ ar
 查看评论信息，如果之前没有给文章添加过评论，那么你新添加的评论的 `comment_seq_id` 应该是 `1`：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```
@@ -412,7 +412,7 @@ Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({
 再次查看评论信息：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```
@@ -428,7 +428,7 @@ Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({
 再次查看评论信息：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_id = 1, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
 
 Inbox[#Inbox]
 ```
