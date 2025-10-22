@@ -3,23 +3,25 @@ local messaging = require("messaging")
 
 local saga_messaging = {}
 
+-- Extract complete reply context from message
+function saga_messaging.extract_reply_context(msg)
+    return {
+        reply = msg.reply,
+        From = msg.From,  -- Reply target address
+        Data = {},        -- Reply data (always empty object)
+        [messaging.X_TAGS_KEY] = messaging.extract_cached_x_tags_from_message(msg)  -- Pre-extracted X-Tags
+    }
+end
 
 local function respond_original_requester(saga_instance, result_or_error, is_error)
-    local original_message_from = saga_instance.original_message and saga_instance.original_message.from or nil
-    local tags = {}
-    if (saga_instance.original_message and saga_instance.original_message.response_action) then
-        tags[messaging.X_TAGS.RESPONSE_ACTION] = saga_instance.original_message.response_action
-    end
-    if (saga_instance.original_message and saga_instance.original_message.no_response_required) then
-        tags[messaging.X_TAGS.NO_RESPONSE_REQUIRED] = saga_instance.original_message.no_response_required
-    end
+    local reply_context = saga_instance.original_message
+
     if is_error and not result_or_error then
         result_or_error = saga_instance.error or "INTERNAL_ERROR"
     end
-    messaging.handle_response_based_on_tag(not is_error, result_or_error, function() end, {
-        From = original_message_from,
-        Tags = tags,
-    })
+
+    -- Directly use pre-constructed reply message object
+    messaging.process_operation_result(not is_error, result_or_error, function() end, reply_context)
 end
 
 function saga_messaging.execute_local_compensations(local_compensations, context)

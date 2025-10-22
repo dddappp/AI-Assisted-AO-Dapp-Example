@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "=== AO Blog 应用自动化测试脚本 (使用 ao-cli 工具) ==="
+echo "=== AO Blog 应用自动化测试脚本 (使用 ao-cli --json) ==="
 echo "基于 AO-Testing-with-AO-CLI.md 文档的测试流程"
-echo "演示 AO Inbox 机制：通过 eval + Send() 让回复消息进入 Inbox，方便调试"
+echo "使用结构化 JSON 输出解析，实现健壮的自动化测试"
 echo ""
 
 # 根据实际情况可能需要设置代理环境变量
@@ -27,6 +27,16 @@ if ! command -v ao-cli &> /dev/null; then
     echo "✅ ao-cli 安装完成"
 fi
 
+# 检查 jq 是否安装（用于 JSON 解析）
+if ! command -v jq &> /dev/null; then
+    echo "❌ jq 命令未找到，这是解析 JSON 所必需的工具。"
+    echo "请安装 jq:"
+    echo "  - macOS: brew install jq"
+    echo "  - Ubuntu/Debian: sudo apt install jq"
+    echo "  - CentOS/RHEL: sudo yum install jq"
+    exit 1
+fi
+
 # 检查钱包文件是否存在
 WALLET_FILE="${HOME}/.aos.json"
 if [ ! -f "$WALLET_FILE" ]; then
@@ -46,7 +56,13 @@ echo "✅ 环境检查通过"
 echo "   钱包文件: $WALLET_FILE"
 echo "   应用代码: $APP_FILE"
 echo "   ao-cli 版本: $(ao-cli --version)"
+echo "   jq 版本: $(jq --version)"
 echo ""
+
+# 辅助函数：运行 ao-cli 并隔离日志（关键！）
+run_ao_cli() {
+    ao-cli "$@" 2>/dev/null
+}
 
 # 初始化步骤状态跟踪变量
 STEP_SUCCESS_COUNT=0
@@ -75,27 +91,61 @@ START_TIME=$(date +%s)
 # 1. 生成 AO 进程
 echo "=== 步骤 1: 生成 AO 进程 ==="
 echo "正在生成AO进程..."
-PROCESS_ID=$(ao-cli spawn default --name "blog-test-$(date +%s)" 2>/dev/null | grep "📋 Process ID:" | awk '{print $4}')
-echo "进程 ID: '$PROCESS_ID'"
+SPAWN_JSON=$(run_ao_cli spawn default --name "blog-test-$(date +%s)" --json)
 
-if [ -z "$PROCESS_ID" ]; then
-    echo "❌ 无法获取进程 ID"
+echo "📋 JSON 输出:"
+echo "$SPAWN_JSON" | jq .
+
+# 验证 JSON 有效性并提取进程ID
+if ! echo "$SPAWN_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Spawn 命令返回无效 JSON"
+    echo "原始输出: $SPAWN_JSON"
     exit 1
-else
-    echo "✅ 步骤1成功，当前成功计数: $((++STEP_SUCCESS_COUNT))"
 fi
+
+# 检查命令是否成功
+if ! echo "$SPAWN_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$SPAWN_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ Spawn 失败: $ERROR_MSG"
+    exit 1
+fi
+
+# 提取进程ID
+PROCESS_ID=$(echo "$SPAWN_JSON" | jq -r '.data.processId')
+if [ -z "$PROCESS_ID" ]; then
+    echo "❌ 无法从 JSON 响应中提取进程 ID"
+    echo "JSON 响应: $SPAWN_JSON"
+    exit 1
+fi
+
+echo "进程 ID: '$PROCESS_ID'"
+echo "✅ 步骤1成功，当前成功计数: $((++STEP_SUCCESS_COUNT))"
 echo ""
 
 # 2. 加载博客应用代码
 echo "=== 步骤 2: 加载博客应用代码 ==="
 echo "正在加载代码到进程: $PROCESS_ID"
-if ao-cli load "$PROCESS_ID" "$APP_FILE" --wait; then
-    echo "✅ 代码加载成功，当前成功计数: $((++STEP_SUCCESS_COUNT))"
-else
-    echo "❌ 代码加载失败"
+LOAD_JSON=$(run_ao_cli load "$PROCESS_ID" "$APP_FILE" --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$LOAD_JSON" | jq .
+
+# 验证 JSON 有效性
+if ! echo "$LOAD_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Load 命令返回无效 JSON"
+    echo "原始输出: $LOAD_JSON"
+    exit 1
+fi
+
+# 检查命令是否成功
+if ! echo "$LOAD_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$LOAD_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 代码加载失败: $ERROR_MSG"
     echo "由于代码加载失败，测试终止"
     exit 1
 fi
+
+echo "✅ 代码加载成功，当前成功计数: $((++STEP_SUCCESS_COUNT))"
 echo ""
 
 # 3. 获取文章序号
@@ -103,72 +153,164 @@ echo "=== 步骤 3: 获取文章序号 ==="
 echo "📋 AO Inbox机制演示：通过eval在进程内部执行Send()调用"
 echo "   如果进程没有回复消息的处理器，回复消息会进入该进程的Inbox"
 echo "初始化json库并发送消息..."
-if ao-cli eval "$PROCESS_ID" --data "json = require('json'); Send({ Target = ao.id, Tags = { Action = 'GetArticleIdSequence' } })" --wait; then
+EVAL_JSON=$(run_ao_cli eval "$PROCESS_ID" --data "json = require('json'); Send({ Target = ao.id, Tags = { Action = 'GetArticleIdSequence' } })" --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$EVAL_JSON" | jq .
+
+# 验证 JSON 有效性
+if ! echo "$EVAL_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Eval 命令返回无效 JSON"
+    echo "原始输出: $EVAL_JSON"
+    exit 1
+fi
+
+# 检查命令是否成功
+if ! echo "$EVAL_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$EVAL_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
 # 4. 创建文章
 echo "=== 步骤 4: 创建文章 ==="
-if ao-cli message "$PROCESS_ID" CreateArticle --data '{"title": "Hello World", "body": "This is a test article"}' --wait; then
+MSG_JSON=$(run_ao_cli message "$PROCESS_ID" CreateArticle --data '{"title": "Hello World", "body": "This is a test article"}' --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$MSG_JSON" | jq .
+
+# 验证 JSON 有效性
+if ! echo "$MSG_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Message 命令返回无效 JSON"
+    echo "原始输出: $MSG_JSON"
+    exit 1
+fi
+
+# 检查命令是否成功
+if ! echo "$MSG_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$MSG_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
 # 5. 获取文章
 echo "=== 步骤 5: 获取文章 ==="
-if ao-cli message "$PROCESS_ID" GetArticle --data '{"article_id": 1}' --wait; then
+MSG_JSON=$(run_ao_cli message "$PROCESS_ID" GetArticle --data '{"article_id": "1"}' --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$MSG_JSON" | jq .
+
+if ! echo "$MSG_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Message 命令返回无效 JSON"
+    echo "原始输出: $MSG_JSON"
+    exit 1
+fi
+
+if ! echo "$MSG_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$MSG_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
-# 6. 更新文章 (使用正确版本: 刚创建的文章版本是0)
+# 6. 更新文章 (使用正确版本: 刚创建的文章版本是"0")
 echo "=== 步骤 6: 更新文章 ==="
-if ao-cli message "$PROCESS_ID" UpdateArticle --data '{"article_id": 1, "version": 0, "title": "Updated Title", "body": "Updated content"}' --wait; then
+MSG_JSON=$(run_ao_cli message "$PROCESS_ID" UpdateArticle --data '{"article_id": "1", "version": "0", "title": "Updated Title", "body": "Updated content"}' --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$MSG_JSON" | jq .
+
+if ! echo "$MSG_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Message 命令返回无效 JSON"
+    echo "原始输出: $MSG_JSON"
+    exit 1
+fi
+
+if ! echo "$MSG_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$MSG_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
-# 7. 更新正文 (使用正确版本: 当前版本是1)
+# 7. 更新正文 (使用正确版本: 当前版本是"1")
 echo "=== 步骤 7: 更新正文 ==="
-if ao-cli message "$PROCESS_ID" UpdateArticleBody --data '{"article_id": 1, "version": 1, "body": "AI-assisted body update"}' --wait; then
+MSG_JSON=$(run_ao_cli message "$PROCESS_ID" UpdateArticleBody --data '{"article_id": "1", "version": "1", "body": "AI-assisted body update"}' --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$MSG_JSON" | jq .
+
+if ! echo "$MSG_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Message 命令返回无效 JSON"
+    echo "原始输出: $MSG_JSON"
+    exit 1
+fi
+
+if ! echo "$MSG_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$MSG_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
-# 8. 添加评论 (使用正确版本: 当前版本是2)
+# 8. 添加评论 (使用正确版本: 当前版本是"2")
 echo "=== 步骤 8: 添加评论 ==="
 echo "初始化json库并发送消息..."
-if ao-cli eval "$PROCESS_ID" --data "json = require('json'); Send({ Target = ao.id, Tags = { Action = 'AddComment' }, Data = json.encode({ article_id = 1, version = 2, commenter = 'alice', body = 'Great article!' }) })" --wait; then
+EVAL_JSON=$(run_ao_cli eval "$PROCESS_ID" --data "json = require('json'); Send({ Target = ao.id, Tags = { Action = 'AddComment' }, Data = json.encode({ article_id = \"1\", version = \"2\", commenter = 'alice', body = 'Great article!' }) })" --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$EVAL_JSON" | jq .
+
+# 验证 JSON 有效性
+if ! echo "$EVAL_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Eval 命令返回无效 JSON"
+    echo "原始输出: $EVAL_JSON"
+    exit 1
+fi
+
+# 检查命令是否成功
+if ! echo "$EVAL_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$EVAL_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
 # 9. 获取评论
 echo "=== 步骤 9: 获取评论 ==="
-if ao-cli message "$PROCESS_ID" GetComment --data '{"article_comment_id": {"article_id": 1, "comment_seq_id": 1}}' --wait; then
+MSG_JSON=$(run_ao_cli message "$PROCESS_ID" GetComment --data '{"article_comment_id": {"article_id": "1", "comment_seq_id": "1"}}' --wait --json)
+
+echo "📋 JSON 输出:"
+echo "$MSG_JSON" | jq .
+
+# 验证 JSON 有效性
+if ! echo "$MSG_JSON" | jq empty 2>/dev/null; then
+    echo "❌ Message 命令返回无效 JSON"
+    echo "原始输出: $MSG_JSON"
+    exit 1
+fi
+
+# 检查命令是否成功
+if ! echo "$MSG_JSON" | jq -e '.success == true' >/dev/null 2>&1; then
+    ERROR_MSG=$(echo "$MSG_JSON" | jq -r '.error // "Unknown error"')
+    echo "❌ 消息发送失败: $ERROR_MSG"
+else
     echo "✅ 消息发送成功"
     ((STEP_SUCCESS_COUNT++))
-else
-    echo "❌ 消息发送失败"
 fi
 echo ""
 
@@ -192,14 +334,14 @@ fi
 # 检查应用代码加载
 echo "✅ 步骤 2 (应用代码加载): 成功"
 
-# 检查各个消息步骤
-echo "✅ 步骤 3 (获取文章序号): 成功"
-echo "✅ 步骤 4 (创建文章): 成功"
-echo "✅ 步骤 5 (获取文章): 成功"
-echo "✅ 步骤 6 (更新文章): 成功"
-echo "✅ 步骤 7 (更新正文): 成功"
-echo "✅ 步骤 8 (添加评论): 成功"
-echo "✅ 步骤 9 (获取评论): 成功"
+# 检查各个消息步骤 - 基于实际执行结果
+if [ "$STEP_SUCCESS_COUNT" -ge 3 ]; then echo "✅ 步骤 3 (获取文章序号): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 4 ]; then echo "✅ 步骤 4 (创建文章): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 5 ]; then echo "✅ 步骤 5 (获取文章): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 6 ]; then echo "✅ 步骤 6 (更新文章): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 7 ]; then echo "✅ 步骤 7 (更新正文): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 8 ]; then echo "✅ 步骤 8 (添加评论): 成功"; fi
+if [ "$STEP_SUCCESS_COUNT" -ge 9 ]; then echo "✅ 步骤 9 (获取评论): 成功"; fi
 
 echo ""
 echo "📊 测试摘要:"
@@ -237,3 +379,4 @@ echo "💡 使用提示:"
 echo "  - 如需指定代理: export HTTPS_PROXY=http://proxy:port"
 echo "  - 调整等待时间: export AO_WAIT_TIME=5"
 echo "  - 查看详细日志: export DEBUG=ao-cli:*"
+echo "  - 当前使用 JSON 模式进行结构化输出解析，更加健壮"

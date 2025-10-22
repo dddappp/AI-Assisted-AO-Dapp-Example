@@ -20,7 +20,7 @@ inventory_item.ERRORS = ERRORS
 function inventory_item.new(inventory_item_id, quantity, entries)
     local state = {
         inventory_item_id = inventory_item_id,
-        version = 0,
+        version = "0",
         quantity = quantity,
         entries = entries,
     }

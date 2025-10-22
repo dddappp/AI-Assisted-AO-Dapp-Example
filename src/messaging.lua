@@ -14,39 +14,85 @@ local MESSAGE_PASS_THROUGH_TAGS = {
 
 messaging.X_TAGS = X_TAGS
 messaging.MESSAGE_PASS_THROUGH_TAGS = MESSAGE_PASS_THROUGH_TAGS
+messaging.X_TAGS_KEY = "XTags"
 
 -- Embed saga information in data to avoid tag loss during forwarding
 function messaging.embed_saga_info_in_data(data, saga_id, response_action)
-    local enhanced_data = data or {}
+    -- CRITICAL FIX: Create a copy instead of modifying the original object to avoid polluting context references
+    local enhanced_data = {}
+    if data then
+        for k, v in pairs(data) do
+            enhanced_data[k] = v
+        end
+    end
     enhanced_data[messaging.X_TAGS.SAGA_ID] = saga_id
     enhanced_data[messaging.X_TAGS.RESPONSE_ACTION] = response_action
     return enhanced_data
 end
 
--- Extract saga information from data
-function messaging.extract_saga_info_from_data(data)
-    if type(data) == "string" then
-        data = json.decode(data)
+function messaging.extract_cached_x_tags_from_message(msg)
+    local x_tags = msg[messaging.X_TAGS_KEY] -- Cache result in msg["XTags"] to avoid repeated computation
+    -- Only nil and false are considered false, other values (including empty table {}) are true
+    if (x_tags) then
+        return x_tags
     end
-    return data[messaging.X_TAGS.SAGA_ID], data[messaging.X_TAGS.RESPONSE_ACTION]
+    x_tags = {}
+
+    -- Safely handle msg.Data
+    local data = msg.Data
+    if (data) then
+        if (type(data) == "string") then
+            local success, decoded = pcall(json.decode, data)
+            if success and type(decoded) == "table" then
+                data = decoded
+            else
+                -- JSON parsing failed, return empty result
+                msg[messaging.X_TAGS_KEY] = x_tags
+                return x_tags
+            end
+        elseif (type(data) ~= "table") then
+            -- data is neither string nor table, return empty result
+            msg[messaging.X_TAGS_KEY] = x_tags
+            return x_tags
+        end
+    else
+        -- No Data field, return empty result
+        msg[messaging.X_TAGS_KEY] = x_tags
+        return x_tags
+    end
+
+    -- Ensure data is a table
+    if (type(data) ~= "table") then
+        msg[messaging.X_TAGS_KEY] = x_tags
+        return x_tags
+    end
+
+    -- Safely extract X_TAGS
+    for _, v in pairs(X_TAGS) do
+        if type(v) == "string" and data[v] ~= nil then
+            x_tags[v] = data[v]
+        end
+    end
+
+    msg[messaging.X_TAGS_KEY] = x_tags
+    return x_tags
 end
 
--- DDDML Enhancement: Saga information access functions
--- Based on data embedding mechanism (the only reliable cross-process transmission method)
 function messaging.get_saga_id(msg)
     -- Extract saga information only from data (cross-process safe)
-    return messaging.extract_saga_info_from_data(msg.Data)
+    local x_tags = messaging.extract_cached_x_tags_from_message(msg)
+    return x_tags[messaging.X_TAGS.SAGA_ID]
 end
 
 function messaging.get_response_action(msg)
     -- Extract response action only from data (cross-process safe)
-    local _, response_action = messaging.extract_saga_info_from_data(msg.Data)
-    return response_action
+    local x_tags = messaging.extract_cached_x_tags_from_message(msg)
+    return x_tags[messaging.X_TAGS.RESPONSE_ACTION]
 end
 
 function messaging.get_no_response_required(msg)
-    -- DDDML Enhancement: Extract from data embedding (not used yet, for compatibility)
-    return nil  -- Currently no_response_required is not embedded in data
+    local x_tags = messaging.extract_cached_x_tags_from_message(msg)
+    return x_tags[messaging.X_TAGS.NO_RESPONSE_REQUIRED]
 end
 
 local string_to_boolean_mappings = {
@@ -79,27 +125,41 @@ end
 function messaging.respond(status, result_or_error, request_msg)
     local data = status and { result = result_or_error } or { error = messaging.extract_error_code(result_or_error) };
 
-    local saga_id = messaging.get_saga_id(request_msg)
-    local response_action = messaging.get_response_action(request_msg)
+    -- Extract saga information from data
+    local x_tags = messaging.extract_cached_x_tags_from_message(request_msg)
+    local response_action = x_tags[messaging.X_TAGS.RESPONSE_ACTION]
 
-    local tags = {}
+    -- Use request_msg.From as response target
+    -- local target = request_msg.From
+
+    if (type(data) == "table") then
+        for _, x_tag in ipairs(MESSAGE_PASS_THROUGH_TAGS) do
+            if x_tags[x_tag] then
+                data[x_tag] = x_tags[x_tag]
+            end
+        end
+    end
+
+    local message = {
+        -- Target = target,
+        Data = json.encode(data)
+    }
+
+    -- If there is response_action, set it to the Action field
     if response_action then
-        tags["Action"] = response_action
+        -- message.Tags = { Action = response_action }
+        message.Action = response_action
     end
 
-    -- Embed saga information in response data if available
-    if saga_id then
-        data = messaging.embed_saga_info_in_data(data, saga_id, response_action)
+    if request_msg.reply then
+        request_msg.reply(message)
+    else
+        message.Target = request_msg.From
+        Send(message)
     end
-
-    ao.send({
-        Target = request_msg.From,
-        Data = json.encode(data),
-        Tags = tags
-    })
 end
 
-function messaging.handle_response_based_on_tag(status, result_or_error, commit, request_msg)
+function messaging.process_operation_result(status, result_or_error, commit, request_msg)
     if status then
         commit()
     end
@@ -112,20 +172,29 @@ function messaging.handle_response_based_on_tag(status, result_or_error, commit,
     end
 end
 
-local function send(target, data, tags)
-    ao.send({
-        Target = target,
-        Data = json.encode(data),
-        Tags = tags
-    })
-end
-
+-- commit_send_or_error: specifically for sending messages to external parties (saga mode)
+-- commit_respond_or_error: specifically for responding to messages (when request message exists)
 function messaging.commit_send_or_error(status, request_or_error, commit, target, tags)
     if (status) then
         commit()
-        send(target, request_or_error, tags)
+        Send({
+            Target = target,
+            Data = json.encode(request_or_error),
+            Tags = tags
+        })
     else
         error(request_or_error)
+    end
+end
+
+-- commit_respond_or_error: commit then respond to message, or throw error
+-- Parameters: status (success or not), result_or_error (result or error), commit (commit function), request_msg (request message)
+function messaging.commit_respond_or_error(status, result_or_error, commit, request_msg)
+    if (status) then
+        commit()
+        messaging.respond(status, result_or_error, request_msg)
+    else
+        error(result_or_error)
     end
 end
 

@@ -312,7 +312,7 @@ You should see that the returned sequence number has become `1`.
 You can view the content of the article with sequence Id `1` like this:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -333,13 +333,13 @@ You should see output similar to this:
 Update the article with sequence number `1` (note that the value of `version` should be consistent with the current version number of the article you saw above):
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateArticle" }, Data = json.encode({ article_id = 1, version = 0, title = "Hello", body = "New World!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateArticle" }, Data = json.encode({ article_id = "1", version = "0", title = "Hello", body = "New World!" }) })
 ```
 
 View the content of the article with sequence Id `1` again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -360,7 +360,7 @@ you can send the `GetArticle` message to the aos process again, then use `Inbox[
 check the current version number of the article):
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = 1, version = 1, body = "New world of AI!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = "1", version = "1", body = "New world of AI!" }) })
 ```
 
 If nothing unexpected happens, you should see a reply similar to this:
@@ -372,7 +372,7 @@ New Message From wkD..._XQ: Data = {"result":{"body":"N
 View the content of the article with sequence Id `1` again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -389,13 +389,13 @@ You should be able to see that the body of the article has been updated to `New 
 Add a comment to the article with sequence Id `1` (note to set the `version` of the article to the correct value):
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = 1, version = 2, commenter = "alice", body = "This looks great." }) })
+Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = "1", version = "2", commenter = "alice", body = "This looks great." }) })
 ```
 
 View the comment information. If you haven't added any comments to the article before, the `comment_seq_id` of your newly added comment should be `1`:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -409,13 +409,13 @@ You should see output similar to this:
 Update the comment you just posted:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({ article_id = 1, version = 3, comment_seq_id = 1, commenter = "alice", body = "It's better than I thought!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({ article_id = "1", version = "3", comment_seq_id = "1", commenter = "alice", body = "It's better than I thought!" }) })
 ```
 
 View the comment information again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -425,13 +425,13 @@ You should be able to see that the content of the comment has been updated.
 Remove the comment you just posted:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({ article_id = 1, version = 4, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({ article_id = "1", version = "4", comment_seq_id = "1" }) })
 ```
 
 View the comment information again:
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -471,7 +471,7 @@ You should see output similar to this:
 Let's add to the quantity of the inventory item again through "Add Inventory Item Entry":
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
+Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 130, version = "0"}) })
 ```
 
 Wait for the inbox to receive the `InventoryItemEntryAdded` event message, then view the inventory item data again:

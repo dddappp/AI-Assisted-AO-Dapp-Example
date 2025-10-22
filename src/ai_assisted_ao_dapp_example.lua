@@ -19,10 +19,17 @@ ArticleTable = ArticleTable and (
 
 ArticleIdSequence = ArticleIdSequence and (
     function(old_data)
-        -- May need to migrate old data
+        -- Migrate from array format {0} to object format {current = "0"}
+        if type(old_data) == "table" and type(old_data[1]) == "number" then
+            return { current = tostring(old_data[1]) }
+        end
+        -- If already object format but value is number, convert to string
+        if type(old_data) == "table" and type(old_data.current) == "number" then
+            return { current = tostring(old_data.current) }
+        end
         return old_data
     end
-)(ArticleIdSequence) or { 0 }
+)(ArticleIdSequence) or { current = "0" }
 
 CommentTable = CommentTable and (
     function(old_data)
@@ -41,10 +48,17 @@ SagaInstances = SagaInstances and (
 
 SagaIdSequence = SagaIdSequence and (
     function(old_data)
-        -- May need to migrate old data
+        -- Migrate from array format {0} to object format {current = "0"}
+        if type(old_data) == "table" and type(old_data[1]) == "number" then
+            return { current = tostring(old_data[1]) }
+        end
+        -- If already object format but value is number, convert to string
+        if type(old_data) == "table" and type(old_data.current) == "number" then
+            return { current = tostring(old_data.current) }
+        end
         return old_data
     end
-)(SagaIdSequence) or { 0 }
+)(SagaIdSequence) or { current = "0" }
 
 
 local json = require("json")
@@ -79,7 +93,7 @@ local function add_inventory_item_entry(msg, env, response)
         local cmd = json.decode(msg.Data)
         return inventory_item_aggregate.add_inventory_item_entry(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function get_article(msg, env, response)
@@ -97,13 +111,7 @@ local function get_comment(msg, env, response)
         local cmd = json.decode(msg.Data)
         local _article_comment_id = cmd.article_comment_id
         local _key = json.encode(article_comment_id.to_key_array(_article_comment_id))
-        print("DEBUG: Looking for comment with key: " .. _key)
-        print("DEBUG: CommentTable keys: " .. json.encode(entity_coll.get_keys(CommentTable)))
         local _state = entity_coll.get(CommentTable, _key)
-        if not _state then
-            print("DEBUG: Comment not found, returning error")
-            error("ID_NOT_EXISTS")
-        end
         return _state
     end))
     messaging.respond(status, result, msg)
@@ -114,7 +122,7 @@ local function update_article_body(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.update_body(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function create_article(msg, env, response)
@@ -122,7 +130,7 @@ local function create_article(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.create(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function update_article(msg, env, response)
@@ -130,7 +138,7 @@ local function update_article(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.update(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function add_comment(msg, env, response)
@@ -138,7 +146,7 @@ local function add_comment(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.add_comment(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function update_comment(msg, env, response)
@@ -146,7 +154,7 @@ local function update_comment(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.update_comment(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 local function remove_comment(msg, env, response)
@@ -154,7 +162,7 @@ local function remove_comment(msg, env, response)
         local cmd = json.decode(msg.Data)
         return article_aggregate.remove_comment(cmd, msg, env)
     end))
-    messaging.handle_response_based_on_tag(status, result, commit, msg)
+    messaging.process_operation_result(status, result, commit, msg)
 end
 
 Handlers.add(

@@ -309,7 +309,7 @@ Send({ Target = ao.id, Tags = { Action = "GetArticleIdSequence" } })
 可以这样查看序号为 `1` 的文章的内容：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -330,13 +330,13 @@ Inbox[#Inbox]
 更新序号为 `1` 的文章（注意 `version` 的值应该与上面看到的当前文章的版本号一致）：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateArticle" }, Data = json.encode({ article_id = 1, version = 0, title = "Hello", body = "New World!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateArticle" }, Data = json.encode({ article_id = "1", version = "0", title = "Hello", body = "New World!" }) })
 ```
 
 再次查看序号为 `1` 的文章的内容：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -356,7 +356,7 @@ Inbox[#Inbox]
 查看文章的当前版本号）：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = 1, version = 1, body = "New world of AI!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateArticleBody" }, Data = json.encode({ article_id = "1", version = "1", body = "New world of AI!" }) })
 ```
 
 如果没有什么意外，你会看到类似这样的回复：
@@ -368,7 +368,7 @@ New Message From wkD..._XQ: Data = {"result":{"body":"N
 再次查看序号为 `1` 的文章的内容：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = 1}) })
+Send({ Target = ao.id, Tags = { Action = "GetArticle" }, Data = json.encode({article_id = "1"}) })
 
 Inbox[#Inbox]
 ```
@@ -386,13 +386,13 @@ Inbox[#Inbox]
 给序号为 `1` 的文章添加评论（注意将文章的 `version` 设置为正确的值）：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = 1, version = 2, commenter = "alice", body = "This looks great." }) })
+Send({ Target = ao.id, Tags = { Action = "AddComment" }, Data = json.encode({ article_id = "1", version = "2", commenter = "alice", body = "This looks great." }) })
 ```
 
 查看评论信息，如果之前没有给文章添加过评论，那么你新添加的评论的 `comment_seq_id` 应该是 `1`：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -406,13 +406,13 @@ Inbox[#Inbox]
 更新你刚发表的评论：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({ article_id = 1, version = 3, comment_seq_id = 1, commenter = "alice", body = "It's better than I thought!" }) })
+Send({ Target = ao.id, Tags = { Action = "UpdateComment" }, Data = json.encode({ article_id = "1", version = "3", comment_seq_id = "1", commenter = "alice", body = "It's better than I thought!" }) })
 ```
 
 再次查看评论信息：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -422,13 +422,13 @@ Inbox[#Inbox]
 移除你刚发表的评论：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({ article_id = 1, version = 4, comment_seq_id = 1 }) })
+Send({ Target = ao.id, Tags = { Action = "RemoveComment" }, Data = json.encode({ article_id = "1", version = "4", comment_seq_id = "1" }) })
 ```
 
 再次查看评论信息：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = 1, comment_seq_id = 1 } }) })
+Send({ Target = ao.id, Tags = { Action = "GetComment" }, Data = json.encode({ article_comment_id = { article_id = "1", comment_seq_id = "1" } }) })
 
 Inbox[#Inbox]
 ```
@@ -470,7 +470,7 @@ Inbox[#Inbox]
 让我们再次通过“添加库存单元条目”来添加库存单元的数量：
 
 ```lua
-Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 130, version = 0}) })
+Send({ Target = ao.id, Tags = { Action = "AddInventoryItemEntry" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = "x", inventory_attribute_set = {} }, movement_quantity = 130, version = "0"}) })
 ```
 
 等待收件箱收到 `InventoryItemEntryAdded` 事件消息，然后再次查看库存单元数据：

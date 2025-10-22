@@ -1,4 +1,5 @@
 local entity_coll = require("entity_coll")
+local bint = require('.bint')(256)
 
 local saga = {}
 
@@ -20,8 +21,10 @@ local function next_saga_id()
     if (saga_id_sequence == nil) then
         error(ERRORS.NIL_SAGA_ID_SEQUENCE)
     end
-    saga_id_sequence[1] = saga_id_sequence[1] + 1
-    return saga_id_sequence[1]
+    local current_bint = bint(saga_id_sequence.current)
+    local next_bint = current_bint + 1
+    saga_id_sequence.current = tostring(next_bint)
+    return saga_id_sequence.current
 end
 
 function saga.get_saga_instance(saga_id)

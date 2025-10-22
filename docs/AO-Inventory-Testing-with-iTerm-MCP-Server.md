@@ -126,15 +126,15 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetInventoryItem\" }, Data = json.encode({ product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
-# 查看库存数据（应该显示 quantity: 100, version: 0）
+# 查看库存数据（应该显示 quantity: 100, version: "0"）
 mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 ```
 
 #### 5.3 测试库存累加功能
 ```bash
-# 再次添加库存条目（测试累加功能，使用 version: 0）
-mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"AddInventoryItemEntry\" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }, movement_quantity = 50, version = 0 }) })"
+# 再次添加库存条目（测试累加功能，使用 version: "0"）
+mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"AddInventoryItemEntry\" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }, movement_quantity = 50, version = "0" }) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
 # 查看累加结果（应该包含 InventoryItemEntryAdded 事件）
@@ -145,7 +145,7 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetInventoryItem\" }, Data = json.encode({ product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
-# 查看最终库存数据（应该显示 quantity: 150, version: 1，两条历史记录）
+# 查看最终库存数据（应该显示 quantity: 150, version: "1"，两条历史记录）
 mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 ```
@@ -153,14 +153,14 @@ mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 #### 5.4 测试库存减少（负数操作）
 ```bash
 # 添加负数库存条目（模拟出库操作）
-mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"AddInventoryItemEntry\" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }, movement_quantity = -30, version = 1 }) })"
+mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"AddInventoryItemEntry\" }, Data = json.encode({ inventory_item_id = { product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }, movement_quantity = -30, version = "1" }) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 
 # 查看减少结果
 mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=5
 
-# 获取最终库存状态（应该显示 quantity: 120, version: 2，三条历史记录）
+# 获取最终库存状态（应该显示 quantity: 120, version: "2"，三条历史记录）
 mcp_iterm-mcp_write_to_terminal command="Send({ Target = ao.id, Tags = { Action = \"GetInventoryItem\" }, Data = json.encode({ product_id = 1, location = \"warehouse_A\", inventory_attribute_set = {} }) })"
 mcp_iterm-mcp_read_terminal_output linesOfOutput=10
 mcp_iterm-mcp_write_to_terminal command="print(Inbox[#Inbox].Data)"

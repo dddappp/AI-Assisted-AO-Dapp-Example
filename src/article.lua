@@ -19,7 +19,7 @@ article.ERRORS = ERRORS
 -- @return table A new state table representing the Article.
 function article.new(title, body, author)
     local state = {
-        version = 0,
+        version = "0",
         title = title,
         body = body,
         author = author,
